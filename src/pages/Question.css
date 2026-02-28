@@ -1,0 +1,61 @@
+/* ===== 共通背景 ===== */
+.page-bg {
+  min-height: 100vh;
+  background: #eef5ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+    "Segoe UI", Arial, sans-serif;
+}
+
+/* ===== メインパネル ===== */
+.main-panel {
+  width: 92%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px 18px 24px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* ===== タイトル ===== */
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* ===== パネル ===== */
+.panel {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 12px;
+  margin-bottom: 10px;
+  border: 1px solid #e3e8f0;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.panel:hover {
+  background: #f5f8ff;
+}
+
+/* ===== サブテキスト ===== */
+.sub {
+  font-size: 12px;
+  color: #7a869a;
+  margin-top: 4px;
+}
+
+/* ===== ボタン風 ===== */
+.primary {
+  background: #4c6fff;
+  color: #ffffff;
+  border: none;
+}
+
+.primary:hover {
+  background: #3b5bdb;
+}

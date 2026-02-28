@@ -1,0 +1,56 @@
+/* =========================
+   Purchase 共通CSS（これ1枚だけ）
+========================= */
+
+.purchase-page {
+  min-height: 100vh;
+  padding: 16px;
+  color: #fff;
+}
+
+.purchase-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.purchase-desc {
+  font-size: 14px;
+  opacity: 0.85;
+  margin-bottom: 16px;
+}
+
+.purchase-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.purchase-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  background: #2a7cff;
+  color: #fff;
+}
+
+.purchase-btn.sub {
+  background: #6b4cff;
+}
+
+.purchase-btn:active {
+  opacity: 0.85;
+}
+
+.back-btn {
+  margin-top: 20px;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+}

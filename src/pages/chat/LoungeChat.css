@@ -1,0 +1,467 @@
+/* =========================
+  Bubble color fix
+========================= */
+
+/* キャスト吹き出し：薄いグレー＋白文字 */
+.lounge-bubble.cast{
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: #ffffff;
+}
+
+/* ユーザー吹き出し：青＋白文字 */
+.lounge-bubble.me{
+  background: rgba(90,140,255,0.75);
+  border: 1px solid rgba(120,170,255,0.9);
+  color: #ffffff;
+}
+
+/* =========================
+  Input / Send button
+========================= */
+
+/* メッセージ入力欄：白 */
+.lounge-text{
+  background: #ffffff;
+  color: #111;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+/* 送信ボタン：白 */
+.lounge-send{
+  background: #ffffff;
+  color: #111;
+  border: 1px solid rgba(0,0,0,0.18);
+}
+
+/* =========================
+  Drink buttons smaller
+========================= */
+
+.drink-btn{
+  height: 30px;          /* ← 小さく */
+  font-size: 12px;
+  border-radius: 8px;
+  padding: 0 6px;
+}
+/* =========================
+  Base
+========================= */
+.lounge-page{
+  height: 100vh;
+  background: #1a1124; /* 黒紫 */
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* =========================
+  Header (固定)
+========================= */
+.lounge-header{
+  height: 54px;
+  min-height: 54px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(26, 17, 36, 0.96);
+  backdrop-filter: blur(6px);
+  display: grid;
+  grid-template-columns: 64px 1fr 92px;
+  align-items: center;
+  padding: 0 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.lounge-back{
+  height: 36px;
+  width: 52px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.lounge-title{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.lounge-avatar{
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.lounge-name{
+  font-size: 14px;
+  letter-spacing: 0.4px;
+}
+
+.lounge-right{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.lounge-menu{
+  height: 36px;
+  width: 44px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* 酔いゲージ（下→上） */
+.drunk-gauge{
+  width: 10px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.10);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+.drunk-fill{
+  width: 100%;
+  background: #ff4d6d;
+  border-radius: 8px;
+}
+
+/* =========================
+  Body
+========================= */
+.lounge-body{
+  flex: 1;
+  overflow: auto;
+  padding: 12px 10px 10px;
+}
+
+/* rows */
+.lounge-row{
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  align-items: flex-end;
+}
+
+.lounge-row.me{
+  justify-content: flex-end;
+}
+
+.bubble-avatar{
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* bubbles */
+.lounge-bubble{
+  max-width: 76%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+
+
+/* system bubble */
+.lounge-row.system{
+  justify-content: center;
+}
+.lounge-bubble.system{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.78);
+}
+
+/* typing bubble */
+.lounge-bubble.typing{
+  opacity: 0.9;
+}
+
+/* =========================
+  Drink gauge (左下/小/黄色)
+========================= */
+.drink-gauge-wrap{
+  position: fixed;
+  left: 10px;
+  bottom: 112px; /* 入力+ドリンクの上 */
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.drink-icon{
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.drink-gauge{
+  width: 8px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.10);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.drink-fill{
+  width: 100%;
+  background: #ffd000; /* 黄色 */
+  border-radius: 8px;
+}
+
+/* =========================
+  Input
+========================= */
+
+.lounge-input{
+  position: sticky;
+  bottom: 48px; /* ドリンクボタンの分 */
+  z-index: 30;
+  background: rgba(26, 17, 36, 0.96);
+  padding: 10px 10px 8px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.lounge-text{
+  flex: 1;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  padding: 0 12px;
+  outline: none;
+}
+
+.lounge-send{
+  width: 68px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(110, 170, 255, 0.85);
+  color: #0b0f1a;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.lounge-send:disabled,
+.lounge-text:disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================
+  Drinks (下段4ボタン)
+========================= */
+.lounge-drinks{
+  position: sticky;
+  bottom: 0;
+  z-index: 35;
+  background: rgba(26, 17, 36, 0.96);
+  padding: 8px 10px 10px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+
+
+.drink-btn:disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================
+  Modal (menu)
+========================= */
+.modal-backdrop{
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+}
+
+.modal{
+  width: min(520px, 92vw);
+  max-height: 86vh;
+  background: rgba(30, 20, 46, 0.98);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.modal-title{
+  font-weight: 900;
+  letter-spacing: 0.3px;
+}
+
+.x-btn{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.10);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* メニュー中身：スクロール可能 */
+.menu-scroll{
+  padding: 10px 12px 12px;
+  overflow-y: auto;
+  max-height: calc(86vh - 52px);
+}
+
+.menu-block{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.menu-h{
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.menu-p{
+  opacity: 0.9;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.modal-item{
+  width: 100%;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.07);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.modal-item:disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.menu-hint{
+  font-size: 12px;
+  opacity: 0.78;
+  margin-bottom: 10px;
+}
+
+/* キャスト一覧 */
+.cast-list{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cast-item{
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.07);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cast-item:disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.menu-note{
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.7;
+  text-align: center;
+}
+
+.modal-close{
+  width: 100%;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255,255,255,0.10);
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+  margin-top: 10px;
+}
+/* src/pages/chat/LoungeChat.css */
+
+/* ここは元のCSSを残したまま、下だけ追加してOK */
+
+/* ===== バーン演出 ===== */
+.burst-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.burst-img {
+  max-width: 90%;
+  max-height: 90%;
+  animation: burst-pop 0.25s ease-out;
+}
+
+@keyframes burst-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
