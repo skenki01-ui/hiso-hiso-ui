@@ -1,10 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import "./MenuModal.css";
-
-type MenuItem = {
-  label: string;
-  path: string;
-};
 
 type Props = {
   open: boolean;
@@ -12,6 +6,7 @@ type Props = {
 };
 
 export default function MenuModal({ open, onClose }: Props) {
+
   const navigate = useNavigate();
 
   if (!open) return null;
@@ -21,38 +16,56 @@ export default function MenuModal({ open, onClose }: Props) {
     navigate(path);
   };
 
-  const items: MenuItem[] = [
-    // ✅ 説明（ここが間違ってた）
-    { label: "説明", path: "/about" },
-
-    // ✅ ポイント
-    { label: "ポイントについて", path: "/about/points" },
-    { label: "ポイント購入", path: "/purchase/points" },
-
-    // ✅ サブスク
-    { label: "サブスクについて", path: "/about/subscription" },
-    { label: "サブスク購入", path: "/purchase/subscription" },
-
-    // ✅ 共有
-    { label: "友だちに教える", path: "/share" },
-  ];
-
   return (
-    <div className="menu-overlay" onClick={onClose}>
-      <div className="menu-panel" onClick={(e) => e.stopPropagation()}>
-        {items.map((item) => (
-          <button
-            key={item.label}
-            className="menu-item"
-            onClick={() => go(item.path)}
-          >
-            {item.label}
-          </button>
-        ))}
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        background: "rgba(0,0,0,0.4)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 999
+      }}
+      onClick={onClose}
+    >
 
-        <button className="menu-close" onClick={onClose}>
+      <div
+        style={{
+          background: "#fff",
+          padding: 20,
+          borderRadius: 10,
+          width: 260,
+          display: "flex",
+          flexDirection: "column",
+          gap: 10
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+
+        <button onClick={() => go("/about")}>
+          説明
+        </button>
+
+        <button onClick={() => go("/about/points")}>
+          ポイントについて
+        </button>
+
+        <button onClick={() => go("/purchase/subscription")}>
+          サブスクについて
+        </button>
+
+        <button onClick={() => go("/share")}>
+          友だちに教える
+        </button>
+
+        <button onClick={onClose}>
           閉じる
         </button>
+
       </div>
     </div>
   );

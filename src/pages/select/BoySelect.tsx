@@ -1,70 +1,67 @@
-// src/pages/select/BoySelect.tsx
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MenuModal from "../components/MenuModal";
-import "../Boys.css";
+import { buildCommonMenuItems } from "../components/menu/commonMenu";
+import "./Select.css";
+
+type BoyId = "teo" | "rei" | "sora";
 
 type Boy = {
-  id: "teo" | "rei" | "sora";
+  id: BoyId;
   name: string;
   line: string;
-  img: string;
+  imgFree: string;
 };
 
 export default function BoySelect() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const boys: Boy[] = useMemo(
-    () => [
-      { id: "teo", name: "テオ", line: "落ち着いて寄り添う", img: "/boys/teo_free.png" },
-      { id: "rei", name: "レイ", line: "整理して導く", img: "/boys/rei_free.png" },
-      { id: "sora", name: "そら", line: "明るく話しやすい", img: "/boys/sora_free.png" },
-    ],
-    []
+  const menuItems = useMemo(
+    () => buildCommonMenuItems(navigate, () => setMenuOpen(false)),
+    [navigate]
   );
 
+  const boys: Boy[] = [
+    { id: "teo", name: "テオ", line: "落ち着いた聞き上手", imgFree: "/boys/teo_free.png" },
+    { id: "rei", name: "レイ", line: "クールで頼れる", imgFree: "/boys/rei_free.png" },
+    { id: "sora", name: "そら", line: "静かに寄り添う", imgFree: "/boys/sora_free.png" },
+  ];
+
   return (
-    <>
-      <div className="page-bg">
-        <div className="main-panel">
-          {/* ヘッダー */}
-          <div className="top-header">
-            <button className="header-btn" onClick={() => navigate("/register")}>
-              ◀︎
-            </button>
-
-            <div className="header-title">お相手を選ぶ</div>
-
-            <button className="header-menu" onClick={() => setMenuOpen(true)}>
-              ≡
-            </button>
-          </div>
-
-          {/* セレクト */}
-          <div className="panel-list">
-            {boys.map((b) => (
-              <button
-                key={b.id}
-                className="select-panel"
-                onClick={() => navigate(`/chat/boy/${b.id}`)}
-              >
-                <img className="avatar-circle" src={b.img} alt={b.name} />
-                <div className="panel-one-line">
-                  <span className="panel-name">{b.name}</span>
-                  <span className="panel-line">{b.line}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+    <div className="boys-page">
+      <div className="boys-header">
+        <button className="boys-back" onClick={() => navigate("/register")}>
+          ◀︎
+        </button>
+        <div className="boys-title">男の子を選ぶ</div>
+        <button className="boys-menu" onClick={() => setMenuOpen(true)}>
+          ≡
+        </button>
       </div>
 
-      {/* ✅ page-bg の外に出す */}
+      <div className="boys-list">
+        {boys.map((b) => (
+          <button
+            key={b.id}
+            className="boy-card"
+            onClick={() => navigate(`/chat/boy/${b.id}`)}
+          >
+            <img className="boy-avatar" src={b.imgFree} alt={b.name} />
+            <div>
+              <div className="boy-name">{b.name}</div>
+              <div className="boy-line">{b.line}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+
       <MenuModal
         open={menuOpen}
+        title="メニュー"
+        items={menuItems}
         onClose={() => setMenuOpen(false)}
       />
-    </>
+    </div>
   );
 }

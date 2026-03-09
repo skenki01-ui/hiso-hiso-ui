@@ -5,7 +5,14 @@ export default function About() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ padding: 16 }}>
+    <div
+      style={{
+        minHeight: "100svh",
+        background: "#eaf3ff",
+        padding: 16,
+        boxSizing: "border-box",
+      }}
+    >
       <BackButton />
 
       <h1>ひそひそについて</h1>
@@ -30,17 +37,29 @@ export default function About() {
         物足りないと感じたら有料機能が使えます。
       </p>
 
-      <div style={{ marginTop: 24 }}>
+      <p>
+        登録すると、
+        <br />
+        次に話しかけたとき、少しだけ前の会話を覚えています。
+        <br />
+        <br />
+        登録しなくても遊べますが、
+        <br />
+        登録するとポイントが付与されるので、
+        <br />
+        ポイントを使った楽しみ方も試せます。
+      </p>
+
+      <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 8 }}>
+        <button onClick={() => navigate("/register")}>
+          登録する
+        </button>
+
         <button onClick={() => navigate("/purchase/points")}>
           ポイント購入
         </button>
 
-        <br />
-
-        <button
-          style={{ marginTop: 8 }}
-          onClick={() => navigate("/purchase/subscription")}
-        >
+        <button onClick={() => navigate("/purchase/subscription")}>
           サブスク購入
         </button>
       </div>

@@ -1,27 +1,59 @@
+// src/pages/Register.tsx
+
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AskLaterModal from "./components/modal/Question";
+import { ensureUser } from "../lib/user";
+import { loadPoint } from "../utils/loadPoint";
 
 export default function Register() {
+
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [askOpen, setAskOpen] = useState(false);
 
-  // ▼ 初回のみ仮ポイント付与
   useEffect(() => {
-    const p = localStorage.getItem("point");
-    if (p === null) {
-      localStorage.setItem("point", "1000"); // 仮ポイント
+
+    // 名前復元
+    const saved = localStorage.getItem("nickname");
+    if (saved) {
+      setName(saved);
     }
+
+    initUser();
+
   }, []);
 
-  const go = (path: string) => {
-    if (name.trim()) {
-      localStorage.setItem("nickname", name.trim());
+  async function initUser() {
+
+    const nickname = (localStorage.getItem("nickname") || "").trim();
+
+    const userId = await ensureUser(nickname);
+
+    if (userId) {
+      localStorage.setItem("user_id", userId);
     }
+
+    await loadPoint();
+  }
+
+  async function go(path: string) {
+
+    const nickname = name.trim();
+
+    if (nickname) {
+      localStorage.setItem("nickname", nickname);
+    }
+
+    const userId = await ensureUser(nickname);
+
+    if (userId) {
+      localStorage.setItem("user_id", userId);
+    }
+
     navigate(path);
-  };
+  }
 
   return (
     <>
@@ -35,45 +67,30 @@ export default function Register() {
           paddingBottom: 24,
         }}
       >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: 420,
-            padding: 16,
-          }}
-        >
-          <h1
-            style={{
-              margin: 0,
-              textAlign: "center",
-              fontSize: 28,
-              lineHeight: 1.2,
-            }}
-          >
+        <div style={{ width: "100%", maxWidth: 420, padding: 16 }}>
+
+          <h1 style={{ margin: 0, textAlign: "center", fontSize: 28 }}>
             💬ひそひそ
           </h1>
 
-          <p
-            style={{
-              margin: "4px 0 12px",
-              textAlign: "center",
-              fontSize: 14,
-              opacity: 0.8,
-            }}
-          >
+          <p style={{ textAlign: "center", fontSize: 14 }}>
             夜のひととき雑談アプリ
           </p>
 
-          <div style={{ fontSize: 12, marginBottom: 4 }}>未記入OK</div>
+          <div style={{ fontSize: 12, marginBottom: 4 }}>
+            未記入OK
+          </div>
 
           <input
             placeholder="なんて呼んだらいい？"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              localStorage.setItem("nickname", e.target.value);
+            }}
             style={{
               width: "100%",
               height: 36,
-              boxSizing: "border-box",
               padding: "6px 10px",
               borderRadius: 6,
               border: "1px solid #ccc",
@@ -82,8 +99,8 @@ export default function Register() {
             }}
           />
 
-          {/* メイン導線 */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+
             <button style={panelStyle} onClick={() => go("/select/free")}>
               自由におしゃべり
             </button>
@@ -100,22 +117,15 @@ export default function Register() {
               🌙ミッドナイトラウンジへ
             </button>
 
-            {/* クエスチョン（遷移しない） */}
-            <button
-              style={panelStyle}
-              onClick={() => setAskOpen(true)}
-            >
+            <button style={panelStyle} onClick={() => setAskOpen(true)}>
               そのうち教えて
             </button>
+
           </div>
         </div>
       </div>
 
-      {/* 任意アンケートモーダル */}
-      <AskLaterModal
-        open={askOpen}
-        onClose={() => setAskOpen(false)}
-      />
+      <AskLaterModal open={askOpen} onClose={() => setAskOpen(false)} />
     </>
   );
 }

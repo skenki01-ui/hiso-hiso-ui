@@ -1,18 +1,92 @@
-/* MenuModal.css */
+/* ===== 背景オーバーレイ ===== */
 .menu-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9999;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* ===== モーダル本体 ===== */
 .menu-panel {
-  position: fixed;
-  top: 60px;
-  right: 12px;
-  width: 220px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  z-index: 1001;
+  width: 92%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+/* ===== ヘッダー ===== */
+.menu-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.menu-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.menu-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* ===== ブロック ===== */
+.menu-block {
+  margin-bottom: 16px;
+}
+
+.menu-h {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.menu-p {
+  font-size: 13px;
+  line-height: 1.6;
+  opacity: 0.85;
+  margin-bottom: 10px;
+}
+
+/* ===== ボタン共通 ===== */
+.menu-item,
+.menu-primary,
+.menu-close-bottom {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* 通常項目 */
+.menu-item {
+  background: #f2f4f8;
+  margin-bottom: 8px;
+}
+
+/* 強調（登録など） */
+.menu-primary {
+  background: #3b82f6;
+  color: #ffffff;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+/* 閉じる */
+.menu-close-bottom {
+  background: #e5e7eb;
 }

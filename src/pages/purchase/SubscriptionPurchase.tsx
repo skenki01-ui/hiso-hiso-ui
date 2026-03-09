@@ -1,31 +1,72 @@
-import { useNavigate } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js"
+import { useNavigate } from "react-router-dom"
+import "./Purchase.css"
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
 export default function SubscriptionPurchase() {
-  const navigate = useNavigate();
 
-  return (
-    <div style={{ padding: 16 }}>
-      <button onClick={() => navigate(-1)}>← 戻る</button>
+  const navigate = useNavigate()
 
-      <h1>サブスク購入</h1>
+  async function buy(priceId:string){
 
-      <div style={{ marginBottom: 24 }}>
-        <h2>🌙 ミッドナイト無制限</h2>
-        <p>20:00〜5:00 無制限</p>
-        <p>1200円 / 月</p>
-        <button onClick={() => alert("ミッドナイト購入（仮）")}>
-          購入する
-        </button>
+    const stripe = await stripePromise
+
+    const res = await fetch("/api/create-checkout",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        priceId
+      })
+    })
+
+    const data = await res.json()
+
+    await stripe?.redirectToCheckout({
+      sessionId:data.id
+    })
+
+  }
+
+  return(
+
+    <div className="purchase-page">
+
+      <div className="purchase-title">
+        サブスク
       </div>
 
-      <div>
-        <h2>⏰ 24時間無制限</h2>
-        <p>いつでも無制限</p>
-        <p>1900円 / 月</p>
-        <button onClick={() => alert("24時間購入（仮）")}>
-          購入する
+      <div className="purchase-list">
+
+        <button
+          className="purchase-btn"
+          onClick={()=>buy(import.meta.env.VITE_STRIPE_SUB_MIDNIGHT)}
+        >
+          ミッドナイト無制限  
+          1200円 / 月
         </button>
+
+        <button
+          className="purchase-btn"
+          onClick={()=>buy(import.meta.env.VITE_STRIPE_SUB_FULL)}
+        >
+          24時間無制限  
+          1900円 / 月
+        </button>
+
       </div>
+
+      <button
+        className="back-btn"
+        onClick={()=>navigate(-1)}
+      >
+        戻る
+      </button>
+
     </div>
-  );
+
+  )
+
 }

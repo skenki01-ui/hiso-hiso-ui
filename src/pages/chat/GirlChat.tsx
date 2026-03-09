@@ -1,191 +1,329 @@
-// src/pages/chat/GirlChat.tsx
+import { hasMidnightSub, hasFullSub } from "../../utils/subscription";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MenuModal from "../components/MenuModal";
+import { supabase } from "../../lib/supabase";
+import { getPoint, usePoint } from "../../utils/point";
+import { generateReply } from "../../services/aiEngine";
 import "./Chat.css";
+
+type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  room_id?: string;
+  created_at?: string;
+};
 
 type GirlId = "mio" | "akina" | "niko";
 
-type Msg = {
-  id: string;
-  role: "assistant" | "user";
-  text: string;
-};
+const TYPE_SPEED = 140;
 
-function isNightNow(d = new Date()) {
-  const h = d.getHours();
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function isNightTime() {
+  const h = new Date().getHours();
   return h >= 20 || h < 5;
 }
 
-function initialTurns() {
-  return isNightNow() ? 6 : 3;
+function getTurnAllowance() {
+  return isNightTime() ? 6 : 3;
+}
+
+function getWindowStart() {
+
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = d.getMonth();
+  const day = d.getDate();
+  const h = d.getHours();
+
+  if (h >= 20) return new Date(y, m, day, 20).getTime();
+  if (h < 5) return new Date(y, m, day - 1, 20).getTime();
+
+  return new Date(y, m, day, 5).getTime();
+
+}
+
+function loadTurnState() {
+
+  const allowance = getTurnAllowance();
+  const start = getWindowStart();
+
+  const savedStart = Number(localStorage.getItem("hs_turn_window_start") || "0");
+  const savedRemaining = Number(localStorage.getItem("hs_turn_remaining") || allowance);
+
+  if (savedStart !== start) {
+
+    localStorage.setItem("hs_turn_window_start", String(start));
+    localStorage.setItem("hs_turn_remaining", String(allowance));
+
+    return allowance;
+
+  }
+
+  return savedRemaining;
+
+}
+
+function saveRemaining(n: number) {
+  localStorage.setItem("hs_turn_remaining", String(n));
+}
+
+function getNextRecoveryText() {
+
+  const h = new Date().getHours();
+
+  if (h >= 20 || h < 5) {
+    return "次の回復は 5:00 です";
+  }
+
+  return "次の回復は 20:00 です";
+
 }
 
 export default function GirlChat() {
+
   const navigate = useNavigate();
-  const { id } = useParams<{ id: GirlId }>();
-  const girlId = id ?? null;
-
-  useEffect(() => {
-    if (!girlId) navigate("/register");
-  }, [girlId, navigate]);
-
-  // ✅ 画像は常に free を使う（サブスクでも同じ）
-  const girl = useMemo(() => {
-    const map: Record<GirlId, { name: string; img: string }> = {
-      mio: { name: "みお", img: "/girls/mio_free.png" },
-      akina: { name: "あきな", img: "/girls/akina_free.png" },
-      niko: { name: "にこ", img: "/girls/niko_free.png" },
-    };
-    return girlId ? map[girlId] : map.mio;
-  }, [girlId]);
-
-  // 課金未接続（仕様のみ）
-  const hasUnlimited = false;
-
-  const BACK_TO_GIRL_SELECT_PATH = "/select/girl";
+  const { id } = useParams();
+  const girlId = (id || "") as GirlId;
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuItems = useMemo(
-    () => [{ label: "登録に戻る", onClick: () => navigate("/register") }],
-    [navigate]
-  );
-
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [turnsLeft, setTurnsLeft] = useState<number>(() => initialTurns());
-  const turnText = hasUnlimited ? "∞" : String(turnsLeft);
+  const [remaining, setRemaining] = useState(0);
+  const [point, setPoint] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
 
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      text: "やっほ。今日はどんな気分？",
-    },
-  ]);
-
-  const [typing, setTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const girlInfo = useMemo(() => {
+
+    const map: Record<GirlId, { name: string; img: string }> = {
+      mio: { name: "みお", img: "/girls/mio.png" },
+      akina: { name: "あきな", img: "/girls/akina.png" },
+      niko: { name: "にこ", img: "/girls/niko.png" }
+    };
+
+    return map[girlId];
+
+  }, [girlId]);
+
+  const roomId = `girl_${girlId}`;
+
+  const midnightSub = hasMidnightSub();
+  const fullSub = hasFullSub();
+  const unlimited = fullSub || (midnightSub && isNightTime());
+
+  useEffect(() => {
+
+    setRemaining(loadTurnState());
+    setPoint(getPoint());
+
+  }, []);
+
+  useEffect(() => {
+
+    async function loadMessages() {
+
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("room_id", roomId)
+        .order("created_at", { ascending: true });
+
+      if (data) setMessages(data as Message[]);
+
+    }
+
+    if (girlId) loadMessages();
+
+  }, [girlId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const replyFor = (userText: string) => {
-    const t = userText.trim();
-    if (!t) return "うん、聞いてるよ。";
+  async function typeAssistantMessage(fullText: string) {
 
-    if (girlId === "mio") {
-      return "無理に言葉にしなくて大丈夫。ゆっくりでいいよ。";
-    }
-    if (girlId === "akina") {
-      return "大丈夫。いま一番しんどい所だけ、教えて？";
-    }
-    return "それな！じゃあ一緒に整理しよ〜！";
-  };
+    const tempId = crypto.randomUUID();
 
-  const canSend =
-    !typing && input.trim().length > 0 && (hasUnlimited || turnsLeft > 0);
+    setIsTyping(true);
 
-  const consumeTurnIfNeeded = () => {
-    if (hasUnlimited) return;
-    setTurnsLeft((prev) => Math.max(0, prev - 1));
-  };
-
-  /** ✅ 一文字ずつ表示（140ms） */
-  const typeWriter = async (fullText: string) => {
-    setTyping(true);
-
-    const id = crypto.randomUUID();
-    setMessages((prev) => [...prev, { id, role: "assistant", text: "" }]);
+    setMessages(prev => [
+      ...prev,
+      { id: tempId, role: "assistant", content: "" }
+    ]);
 
     for (let i = 0; i < fullText.length; i++) {
-      await new Promise((r) => setTimeout(r, 140));
-      setMessages((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, text: m.text + fullText[i] } : m))
+
+      await sleep(TYPE_SPEED);
+
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === tempId
+            ? { ...m, content: fullText.slice(0, i + 1) }
+            : m
+        )
       );
+
     }
 
-    setTyping(false);
-  };
+    setIsTyping(false);
 
-  const onSend = async () => {
+  }
+
+  async function sendMessage() {
+
     const text = input.trim();
-    if (!canSend) return;
+
+    if (!text || isTyping) return;
+
+    const currentRemaining = loadTurnState();
+
+    if (unlimited || currentRemaining > 0) {
+
+      if (!unlimited) {
+
+        const next = currentRemaining - 1;
+        saveRemaining(next);
+        setRemaining(next);
+
+      }
+
+    } else {
+
+      const ok = usePoint(5);
+
+      if (!ok) {
+
+        setMessages(prev => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: `無料ターンを使い切りました。\n${getNextRecoveryText()}\nまたは5pで続けられます。`
+          }
+        ]);
+
+        return;
+
+      }
+
+      setPoint(getPoint());
+
+    }
 
     setInput("");
-    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "user", text }]);
 
-    consumeTurnIfNeeded();
+    const { data: userData } = await supabase
+      .from("messages")
+      .insert([{ room_id: roomId, role: "user", content: text }])
+      .select()
+      .single();
 
-    const reply = replyFor(text);
-    await typeWriter(reply);
-  };
+    if (!userData) return;
 
-  const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-    if (e.key === "Enter") onSend();
-  };
+    setMessages(prev => [...prev, userData as Message]);
 
-  if (!girlId) return null;
+    const aiText = await generateReply({
+      character: girlInfo?.name,
+      genre: "girl",
+      userMessage: text
+    });
+
+    await typeAssistantMessage(aiText);
+
+    await supabase.from("messages").insert([
+      { room_id: roomId, role: "assistant", content: aiText }
+    ]);
+
+  }
 
   return (
-    <div className="page-bg">
-      <div className="main-panel">
-        {/* ヘッダー */}
-        <div className="top-header">
-          <button className="header-btn" onClick={() => navigate(BACK_TO_GIRL_SELECT_PATH)}>
-            ◀︎
-          </button>
 
-          <div className="header-center">
-            <img className="header-avatar" src={girl.img} alt={girl.name} />
-            <div className="header-name">{girl.name}</div>
-          </div>
+    <div className="chat-page">
 
-          <div className="header-right">
-            <div className="turn-count">残り {turnText}</div>
-            <button className="header-menu" onClick={() => setMenuOpen(true)}>
-              ≡
-            </button>
-          </div>
+      <div className="chat-header">
+
+        <button
+          className="header-btn"
+          onClick={() => navigate("/select/girl")}
+        >
+          ◀︎
+        </button>
+
+        <div className="chat-title">
+          <img src={girlInfo?.img} className="header-avatar" />
+          <span className="header-name">{girlInfo?.name}</span>
         </div>
 
-        {/* チャット本文 */}
-        <div className="chat-body">
-          {messages.map((m) => (
-            <div key={m.id} className={m.role === "assistant" ? "row-left" : "row-right"}>
-              {m.role === "assistant" && (
-                <img className="mini-avatar" src={girl.img} alt={girl.name} />
-              )}
-              <div className={m.role === "assistant" ? "bubble-left" : "bubble-right"}>
-                {m.text}
+        <div className="header-right">
+
+          <span className="header-remaining">
+            {unlimited ? "残り ♾️" : `残り ${remaining}`} | {point}p
+          </span>
+
+          <button
+            className="header-btn"
+            onClick={() => setMenuOpen(true)}
+          >
+            三
+          </button>
+
+        </div>
+
+      </div>
+
+      <div className="chat-list">
+
+        {messages.map(m =>
+          m.role === "assistant"
+            ? (
+              <div key={m.id} className="row ai">
+                <img src={girlInfo?.img} className="avatar" />
+                <div className="bubble ai">{m.content}</div>
               </div>
-            </div>
-          ))}
-          <div ref={bottomRef} />
-        </div>
+            )
+            : (
+              <div key={m.id} className="row me">
+                <div className="bubble me">{m.content}</div>
+              </div>
+            )
+        )}
 
-        {/* フッター */}
-        <div className="chat-footer">
-          <input
-            className="chat-input"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder={!hasUnlimited && turnsLeft <= 0 ? "ターンがありません" : "メッセージを入力"}
-            disabled={!hasUnlimited && turnsLeft <= 0}
-          />
-          <button className="chat-send" onClick={onSend} disabled={!canSend}>
-            送信
-          </button>
-        </div>
+        <div ref={bottomRef} />
+
+      </div>
+
+      <div className="chat-footer">
+
+        <input
+          className="chat-input"
+          value={input}
+          placeholder="メッセージを入力"
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+        />
+
+        <button
+          className="chat-send"
+          onClick={sendMessage}
+        >
+          送信
+        </button>
+
       </div>
 
       <MenuModal
         open={menuOpen}
-        title="メニュー"
-        items={menuItems}
         onClose={() => setMenuOpen(false)}
       />
+
     </div>
+
   );
+
 }

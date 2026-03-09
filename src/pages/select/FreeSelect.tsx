@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MenuModal from "../components/MenuModal";
-import "./FreeSelect.css";
+import "./Select.css";
 
 type Genre = {
   title: string;
@@ -31,49 +31,33 @@ export default function FreeSelect() {
 
   const [genre, setGenre] = useState(GENRES[0].title);
   const [mode, setMode] = useState(MODES[0]);
-
-  /* ===== メニュー ===== */
   const [menuOpen, setMenuOpen] = useState(false);
 
   const query = useMemo(() => {
-    return `?genre=${encodeURIComponent(genre)}&mode=${encodeURIComponent(
-      mode
-    )}`;
+    return `?genre=${encodeURIComponent(genre)}&mode=${encodeURIComponent(mode)}`;
   }, [genre, mode]);
 
   return (
     <div className="free-select-page">
-      {/* ===== Header ===== */}
       <header className="free-select-header">
-        <button
-          className="icon-btn"
-          onClick={() => navigate("/register")}
-          aria-label="戻る"
-        >
+        <button className="icon-btn" onClick={() => navigate("/register")}>
           ◀︎
         </button>
 
         <div className="free-select-title">💬 自由におしゃべり</div>
 
-        <button
-          className="icon-btn"
-          onClick={() => setMenuOpen(true)}
-          aria-label="メニュー"
-        >
+        <button className="icon-btn" onClick={() => setMenuOpen(true)}>
           ≡
         </button>
       </header>
 
-      {/* ===== ジャンル ===== */}
       <section className="free-select-section">
         <div className="section-title">ジャンル</div>
         <div className="genre-grid">
           {GENRES.map((g) => (
             <button
               key={g.title}
-              className={`genre-card ${
-                genre === g.title ? "active" : ""
-              }`}
+              className={`genre-card ${genre === g.title ? "active" : ""}`}
               onClick={() => setGenre(g.title)}
             >
               <div className="genre-title">{g.title}</div>
@@ -83,7 +67,6 @@ export default function FreeSelect() {
         </div>
       </section>
 
-      {/* ===== モード ===== */}
       <section className="free-select-section">
         <div className="section-title">モード</div>
         <div className="mode-grid">
@@ -99,7 +82,6 @@ export default function FreeSelect() {
         </div>
       </section>
 
-      {/* ===== Start ===== */}
       <footer className="free-select-footer">
         <button
           className="start-btn"
@@ -109,7 +91,6 @@ export default function FreeSelect() {
         </button>
       </footer>
 
-      {/* ===== 共通メニュー ===== */}
       <MenuModal open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );

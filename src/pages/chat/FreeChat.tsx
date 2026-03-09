@@ -1,170 +1,330 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import MenuModal from "../components/MenuModal";
-import "./Chat.css";
+import { hasMidnightSub, hasFullSub } from "../../utils/subscription";
+import { useEffect, useRef, useState } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import MenuModal from "../components/MenuModal"
+import { supabase } from "../../lib/supabase"
+import { getPoint, usePoint } from "../../utils/point"
+import { generateReply } from "../../services/aiEngine"
+import "./Chat.css"
 
-type Msg = {
-  id: string;
-  role: "assistant" | "user";
-  text: string;
-};
-
-function isNightNow(d = new Date()) {
-  const h = d.getHours();
-  return h >= 20 || h < 5;
+type Message = {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  room_id?: string
+  created_at?: string
 }
 
-function initialTurns() {
-  return isNightNow() ? 6 : 3;
+const TYPE_SPEED = 140
+
+function sleep(ms:number){
+  return new Promise(res=>setTimeout(res,ms))
 }
 
-const TYPE_SPEED = 140;
+function isNightTime(){
+  const h = new Date().getHours()
+  return h >= 20 || h < 5
+}
 
-export default function FreeChat() {
-  const navigate = useNavigate();
-  const [params] = useSearchParams();
+function getTurnAllowance(){
+  return isNightTime() ? 6 : 3
+}
 
-  const genre = params.get("genre") ?? "";
-  const mode = params.get("mode") ?? "";
+function getWindowStart(){
 
-  /* ===== 名前（未記入OK） ===== */
-  const [aiName, setAiName] = useState("");
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = d.getMonth()
+  const day = d.getDate()
+  const h = d.getHours()
 
-  /* ===== メニュー ===== */
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuItems = useMemo(
-    () => [{ label: "閉じる", onClick: () => setMenuOpen(false) }],
-    []
-  );
+  if(h >= 20) return new Date(y,m,day,20).getTime()
+  if(h < 5) return new Date(y,m,day-1,20).getTime()
 
-  /* ===== ターン ===== */
-  const [turnsLeft, setTurnsLeft] = useState<number>(() => initialTurns());
+  return new Date(y,m,day,5).getTime()
 
-  /* ===== チャット ===== */
-  const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
+}
 
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      text: "私の名前、つけてくれる？未記入でもいいよ。",
-    },
-  ]);
+function loadTurnState(){
 
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const allowance = getTurnAllowance()
+  const start = getWindowStart()
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typing]);
+  const savedStart = Number(localStorage.getItem("hs_free_turn_start") || "0")
+  const savedRemaining = Number(localStorage.getItem("hs_free_turn_remaining") || allowance)
 
-  const canSend = !typing && input.trim().length > 0 && turnsLeft > 0;
+  if(savedStart !== start){
 
-  const replyBase = () => {
-    const name = aiName.trim();
-    if (name) return `${name}はちゃんと聞いてるよ。`;
-    return "うん、聞いてるよ。";
-  };
+    localStorage.setItem("hs_free_turn_start",String(start))
+    localStorage.setItem("hs_free_turn_remaining",String(allowance))
 
-  /* ===== 一文字演出 ===== */
-  const typeWriter = async (text: string) => {
-    setTyping(true);
-    const id = crypto.randomUUID();
-    setMessages((p) => [...p, { id, role: "assistant", text: "" }]);
+    return allowance
+  }
 
-    for (let i = 0; i < text.length; i++) {
-      await new Promise((r) => setTimeout(r, TYPE_SPEED));
-      setMessages((p) =>
-        p.map((m) => (m.id === id ? { ...m, text: m.text + text[i] } : m))
-      );
+  return savedRemaining
+}
+
+function saveRemaining(n:number){
+  localStorage.setItem("hs_free_turn_remaining",String(n))
+}
+
+function getNextRecoveryText(){
+
+  const h = new Date().getHours()
+
+  if(h >= 20 || h < 5){
+    return "次の回復は 5:00 です"
+  }
+
+  return "次の回復は 20:00 です"
+}
+
+export default function FreeChat(){
+
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  const genre = searchParams.get("genre") || ""
+  const mode = searchParams.get("mode") || ""
+
+  const [messages,setMessages] = useState<Message[]>([])
+  const [input,setInput] = useState("")
+  const [menuOpen,setMenuOpen] = useState(false)
+
+  const [remaining,setRemaining] = useState(0)
+  const [point,setPoint] = useState(0)
+
+  const [aiName,setAiName] = useState("")
+  const [isTyping,setIsTyping] = useState(false)
+
+  const bottomRef = useRef<HTMLDivElement | null>(null)
+
+  const roomId="free_chat"
+
+  const midnightSub = hasMidnightSub()
+  const fullSub = hasFullSub()
+  const unlimited = fullSub || (midnightSub && isNightTime())
+
+  useEffect(()=>{
+
+    setRemaining(loadTurnState())
+    setPoint(getPoint())
+
+    const saved = localStorage.getItem("hs_free_ai_name") || ""
+    setAiName(saved)
+
+  },[])
+
+  useEffect(()=>{
+
+    async function loadMessages(){
+
+      const {data} = await supabase
+      .from("messages")
+      .select("*")
+      .eq("room_id",roomId)
+      .order("created_at",{ascending:true})
+
+      if(data) setMessages(data as Message[])
+
     }
-    setTyping(false);
-  };
 
-  const onSend = async () => {
-    if (!canSend) return;
+    loadMessages()
 
-    const text = input.trim();
-    setInput("");
+  },[])
 
-    setMessages((p) => [...p, { id: crypto.randomUUID(), role: "user", text }]);
-    setTurnsLeft((p) => Math.max(0, p - 1));
+  useEffect(()=>{
+    bottomRef.current?.scrollIntoView({behavior:"smooth"})
+  },[messages,isTyping])
 
-    const reply = replyBase();
-    await typeWriter(reply);
-  };
+  async function typeAssistantMessage(full:string){
 
-  return (
-    <div className="page-bg">
-      <div className="main-panel">
-        {/* ===== ヘッダー ===== */}
-        <div className="top-header">
-          <button className="header-btn" onClick={() => navigate("/select/free")}>
-            ◀︎
-          </button>
+    setIsTyping(true)
 
-          <div className="header-center">
-            <input
-              className="header-ai-name"
-              value={aiName}
-              onChange={(e) => setAiName(e.target.value)}
-              placeholder="なまえをつけてあげて"
-              maxLength={10}
-            />
-          </div>
+    const id=crypto.randomUUID()
 
-          <div className="header-right">
-            <div className="turn-count">残り {turnsLeft}</div>
-            <button className="header-menu" onClick={() => setMenuOpen(true)}>
-              ≡
-            </button>
-          </div>
-        </div>
+    setMessages(prev=>[...prev,{id,role:"assistant",content:""}])
 
-        {/* ===== 本文 ===== */}
-        <div className="chat-body">
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={m.role === "assistant" ? "row-left" : "row-right"}
-            >
-              <div
-                className={
-                  m.role === "assistant" ? "bubble-left" : "bubble-right"
-                }
-              >
-                {m.text}
-              </div>
-            </div>
-          ))}
-          <div ref={bottomRef} />
-        </div>
+    for(let i=0;i<full.length;i++){
 
-        {/* ===== 入力 ===== */}
-        <div className="chat-footer">
-          <input
-            className="chat-input"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onSend()}
-            placeholder={
-              turnsLeft <= 0 ? "ターンがありません" : "メッセージを入力"
-            }
-            disabled={turnsLeft <= 0}
-          />
-          <button className="chat-send" onClick={onSend} disabled={!canSend}>
-            送信
-          </button>
-        </div>
+      await sleep(TYPE_SPEED)
+
+      setMessages(prev=>
+        prev.map(m=>
+          m.id===id
+          ? {...m,content:full.slice(0,i+1)}
+          : m
+        )
+      )
+
+    }
+
+    setIsTyping(false)
+
+  }
+
+  async function sendMessage(){
+
+    const text=input.trim()
+
+    if(!text || isTyping) return
+
+    const currentRemaining = loadTurnState()
+
+    if(unlimited || currentRemaining > 0){
+
+      if(!unlimited){
+
+        const next = currentRemaining - 1
+        saveRemaining(next)
+        setRemaining(next)
+
+      }
+
+    }else{
+
+      const ok = usePoint(5)
+
+      if(!ok){
+
+        setMessages(prev=>[
+          ...prev,
+          {
+            id:crypto.randomUUID(),
+            role:"assistant",
+            content:`無料ターンを使い切りました\n${getNextRecoveryText()}\nまたは5pで続けられます`
+          }
+        ])
+
+        return
+      }
+
+      setPoint(getPoint())
+
+    }
+
+    setInput("")
+
+    const {data:userData} = await supabase
+      .from("messages")
+      .insert([{room_id:roomId,role:"user",content:text}])
+      .select()
+      .single()
+
+    if(!userData) return
+
+    setMessages(prev=>[...prev,userData as Message])
+
+    const aiText = await generateReply({
+      character:aiName,
+      genre,
+      mode,
+      userMessage:text
+    })
+
+    await typeAssistantMessage(aiText)
+
+    await supabase
+      .from("messages")
+      .insert([{room_id:roomId,role:"assistant",content:aiText}])
+
+  }
+
+  return(
+
+  <div className="chat-page">
+
+    <div className="chat-header">
+
+      <button
+        className="header-btn"
+        onClick={()=>navigate(-1)}
+      >
+        ◀︎
+      </button>
+
+      <input
+        value={aiName}
+        placeholder="好きな名前つけて"
+        onChange={(e)=>{
+          const v=e.target.value
+          setAiName(v)
+          localStorage.setItem("hs_free_ai_name",v)
+        }}
+        className="free-name-input"
+      />
+
+      <div className="header-right">
+
+        <span className="header-remaining">
+          {unlimited ? "残り ♾️" : `残り ${remaining}`} | {point}p
+        </span>
+
+        <button
+          className="header-btn"
+          onClick={()=>setMenuOpen(true)}
+        >
+          三
+        </button>
+
       </div>
 
-      {/* ===== メニュー ===== */}
-      <MenuModal
-        open={menuOpen}
-        title="メニュー"
-        items={menuItems}
-        onClose={() => setMenuOpen(false)}
-      />
     </div>
-  );
+
+    <div className="chat-list">
+
+      {messages.map(m=>
+
+        m.role==="assistant"
+
+        ?(
+          <div key={m.id} className="row ai">
+            <div className="bubble ai">
+              {m.content}
+            </div>
+          </div>
+        )
+
+        :(
+          <div key={m.id} className="row me">
+            <div className="bubble me">
+              {m.content}
+            </div>
+          </div>
+        )
+
+      )}
+
+      <div ref={bottomRef}/>
+
+    </div>
+
+    <div className="chat-footer">
+
+      <input
+        className="chat-input"
+        value={input}
+        placeholder="メッセージを入力"
+        onChange={(e)=>setInput(e.target.value)}
+        onKeyDown={(e)=>e.key==="Enter" && sendMessage()}
+      />
+
+      <button
+        className="chat-send"
+        onClick={sendMessage}
+      >
+        送信
+      </button>
+
+    </div>
+
+    <MenuModal
+      open={menuOpen}
+      onClose={()=>setMenuOpen(false)}
+    />
+
+  </div>
+
+  )
+
 }

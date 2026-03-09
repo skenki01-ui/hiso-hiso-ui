@@ -1,32 +1,90 @@
-import { useState } from "react";
-import MenuModal from "../components/MenuModal";
 import { useNavigate } from "react-router-dom";
 
-type Props = { title: string };
+type Props = {
+  turns?: string;
+  points?: number;
+  onMenu?: () => void;
+};
 
-export default function ChatHeader({ title }: Props) {
- const [menuOpen, setMenuOpen] = useState(false);
+export default function ChatHeader({
+  turns,
+  points,
+  onMenu
+}: Props) {
+
   const navigate = useNavigate();
 
   return (
-    <div style={styles.header}>
-      <button style={styles.back} onClick={() => navigate(-1)}>◀︎</button>
-      <div style={styles.title}>{title}</div>
-      <div style={styles.menu}>≡</div>
+    <div
+      style={{
+        height: 48,
+        background: "#3B58FF",
+        color: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 10px"
+      }}
+    >
+
+      {/* 戻る */}
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          background: "none",
+          border: "none",
+          color: "#fff",
+          fontSize: 18
+        }}
+      >
+        ◀
+      </button>
+
+      {/* 名前入力 */}
+      <input
+        placeholder="名前つけて"
+        style={{
+          border: "none",
+          textAlign: "center",
+          fontSize: 16,
+          outline: "none",
+          background: "transparent",
+          color: "#fff",
+          width: 140
+        }}
+      />
+
+      {/* 右側 */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10
+        }}
+      >
+
+        <span style={{ fontSize: 12 }}>
+          {turns}
+        </span>
+
+        <span style={{ fontSize: 12 }}>
+          {points}p
+        </span>
+
+        <button
+          onClick={onMenu}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#fff",
+            fontSize: 18
+          }}
+        >
+          ☰
+        </button>
+
+      </div>
+
     </div>
   );
 }
-
-const styles = {
-  header: {
-    height: 48,
-    background: "#5B5BFF",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    padding: "0 10px",
-  },
-  back: { marginRight: 8 },
-  title: { flex: 1, textAlign: "center", fontWeight: 700 },
-  menu: { width: 24, textAlign: "right" },
-};
