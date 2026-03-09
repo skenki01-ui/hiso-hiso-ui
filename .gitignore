@@ -5,3 +5,6 @@ dist
 .env
 .env.local
 .vscode
+node_modules
+package-lock.json
+dist
