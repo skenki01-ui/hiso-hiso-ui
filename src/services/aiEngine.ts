@@ -169,7 +169,7 @@ ${adultOk ? "可能" : "不可"}
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages,
-        temperature: 0.9
+        temperature: 0.8
       })
 
     })
