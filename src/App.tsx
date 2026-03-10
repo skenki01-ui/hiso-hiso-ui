@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
 
+import InstallGuide from "./components/InstallGuide";
+
 import Register from "./pages/Register";
 
 import BoySelect from "./pages/select/BoySelect";
@@ -27,6 +29,9 @@ import Question from "./pages/components/modal/Question";
 export default function App() {
   return (
     <BrowserRouter>
+
+      <InstallGuide />
+
       <Routes>
 
         {/* 初期 */}
