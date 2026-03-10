@@ -3,6 +3,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AskLaterModal from "./components/modal/Question";
+import InstallGuide from "../components/InstallGuide";
 import { ensureUser } from "../lib/user";
 import { loadPoint } from "../utils/loadPoint";
 
@@ -15,7 +16,6 @@ export default function Register() {
 
   useEffect(() => {
 
-    // 名前復元
     const saved = localStorage.getItem("nickname");
     if (saved) {
       setName(saved);
@@ -57,6 +57,8 @@ export default function Register() {
 
   return (
     <>
+      <InstallGuide />
+
       <div
         style={{
           minHeight: "100svh",
