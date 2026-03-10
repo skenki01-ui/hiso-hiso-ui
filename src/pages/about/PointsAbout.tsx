@@ -1,4 +1,4 @@
-import { createCheckout } from "../api/createCheckout";
+//import { createCheckout } from "../api/createCheckout.tsdisabled";
 import { useNavigate } from "react-router-dom";
 
 export default function PointsAbout() {
@@ -14,7 +14,7 @@ export default function PointsAbout() {
       return;
     }
 
-    const url = await createCheckout(priceId, userId, point);
+   // const url = await createCheckout(priceId, userId, point);
 
     if (url) {
       window.location.href = url;
