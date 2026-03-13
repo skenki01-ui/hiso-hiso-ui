@@ -20,6 +20,8 @@ export default function PointsAbout() {
         body: JSON.stringify({ priceId }),
       });
 
+      console.log(await res.text());
+      
       const data = await res.json();
 
       await stripe?.redirectToCheckout({
