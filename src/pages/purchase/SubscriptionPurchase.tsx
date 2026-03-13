@@ -1,15 +1,8 @@
-import { loadStripe } from "@stripe/stripe-js";
-import { useNavigate } from "react-router-dom";
-import "./Purchase.css";
-
-const stripePromise = loadStripe("pk_live_51SqO64C778tZKUAv2iDnpc95ZJLLe8wX6Q6fqKrnrZyzJx62hhjSlOYfDCYfgRaQpaHncnfDUweQ9n1GeF0cVmdR004sK2Ulju");
-
 export default function SubscriptionPurchase() {
-  const navigate = useNavigate();
 
   async function buy(priceId: string) {
+
     try {
-      const stripe = await stripePromise;
 
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -21,41 +14,38 @@ export default function SubscriptionPurchase() {
 
       const data = await res.json();
 
-      await stripe?.redirectToCheckout({
-        sessionId: data.id,
-      });
+      if (!res.ok) {
+        alert(JSON.stringify(data));
+        return;
+      }
+
+      if (!data.url) {
+        alert("決済URL取得失敗");
+        return;
+      }
+
+      // Stripe決済ページへ移動
+      window.location.href = data.url;
+
     } catch (e) {
       alert("決済ページの作成に失敗しました");
     }
+
   }
 
   return (
-    <div className="purchase-page">
-      <div className="purchase-title">サブスク</div>
+    <div>
 
-      <div className="purchase-list">
-        <button
-          className="purchase-btn"
-          onClick={() => buy(import.meta.env.VITE_STRIPE_SUB_MIDNIGHT)}
-        >
-          ミッドナイト無制限
-          <br />
-          1200円 / 月
-        </button>
+      <h2>サブスク購入</h2>
 
-        <button
-          className="purchase-btn"
-          onClick={() => buy(import.meta.env.VITE_STRIPE_SUB_24H)}
-        >
-          24時間無制限
-          <br />
-          1900円 / 月
-        </button>
-      </div>
-
-      <button className="back-btn" onClick={() => navigate(-1)}>
-        戻る
+      <button onClick={() => buy("price_XXXX")}>
+        月額1200円（夜 unlimited）
       </button>
+
+      <button onClick={() => buy("price_YYYY")}>
+        月額1900円（24h unlimited）
+      </button>
+
     </div>
   );
 }
