@@ -1,8 +1,8 @@
 import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe(
-  "pk_live_51SqO64C778tZKUAv2iDnpc95ZJLLe8wX6Q6fqKrnrZyzJx62hhjSlOYfDCYfgRaQpaHncnfDUweQ9n1GeF0cVmdR004sK2Ulju");
-
+  "pk_live_51SqO64C778tZKUAv2iDnpc95ZJLLe8wX6Q6fqKrnrZyzJx62hhjSlOYfDCYfgRaQpaHncnfDUweQ9n1GeF0cVmdR004sK2Ulju"
+);
 
 export default function PointsAbout() {
 
@@ -19,7 +19,7 @@ export default function PointsAbout() {
         },
         body: JSON.stringify({ priceId }),
       });
-      
+
       const data = await res.json();
 
       await stripe?.redirectToCheckout({
@@ -27,10 +27,10 @@ export default function PointsAbout() {
       });
 
     } catch (e: any) {
-  alert(JSON.stringify(e));
-}
+      alert(JSON.stringify(e));
+    }
 
-    };
+  };
 
   return (
     <div className="points-card">
@@ -54,3 +54,4 @@ export default function PointsAbout() {
 
     </div>
   );
+}
