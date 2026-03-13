@@ -87,6 +87,8 @@ export default function FreeChat(){
   const genre = searchParams.get("genre") || ""
   const mode = searchParams.get("mode") || ""
 
+  const userId = localStorage.getItem("user_id") || "guest"
+
   const [messages,setMessages] = useState<Message[]>([])
   const [input,setInput] = useState("")
   const [menuOpen,setMenuOpen] = useState(false)
@@ -99,7 +101,7 @@ export default function FreeChat(){
 
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
-  const roomId="free_chat"
+  const roomId = `free_chat_${userId}`
 
   const midnightSub = hasMidnightSub()
   const fullSub = hasFullSub()
@@ -207,7 +209,12 @@ export default function FreeChat(){
 
     const {data:userData} = await supabase
       .from("messages")
-      .insert([{room_id:roomId,role:"user",content:text}])
+      .insert([{
+        room_id:roomId,
+        user_id:userId,
+        role:"user",
+        content:text
+      }])
       .select()
       .single()
 
@@ -226,7 +233,12 @@ export default function FreeChat(){
 
     await supabase
       .from("messages")
-      .insert([{room_id:roomId,role:"assistant",content:aiText}])
+      .insert([{
+        room_id:roomId,
+        user_id:userId,
+        role:"assistant",
+        content:aiText
+      }])
 
   }
 

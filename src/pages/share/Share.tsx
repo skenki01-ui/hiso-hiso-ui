@@ -5,111 +5,166 @@ import { useNavigate } from "react-router-dom";
 export default function Share() {
 
   const navigate = useNavigate();
+  const [inviteUrl, setInviteUrl] = useState("");
 
-  const [refCode,setRefCode] = useState("");
-  const [inviteUrl,setInviteUrl] = useState("");
-
-  useEffect(()=>{
+  useEffect(() => {
 
     let code = localStorage.getItem("ref_code");
 
-    if(!code){
-      code = crypto.randomUUID().slice(0,8);
-      localStorage.setItem("ref_code",code);
+    if (!code) {
+      code = crypto.randomUUID().slice(0, 8);
+      localStorage.setItem("ref_code", code);
     }
 
-    setRefCode(code);
+    const invite = `${window.location.origin}/register?ref=${code}`;
 
-    const url = `${window.location.origin}/register?ref=${code}`;
+    setInviteUrl(invite);
 
-    setInviteUrl(url);
+  }, []);
 
-  },[]);
+  const copy = async () => {
 
-  const copy = async ()=>{
+    if (!inviteUrl) return;
 
-    try{
+    try {
       await navigator.clipboard.writeText(inviteUrl);
-      alert("招待リンクをコピーしました");
-    }catch{
+      alert("リンクをコピーしました");
+    } catch {
       alert("コピーできませんでした");
     }
 
   };
 
-  const share = async ()=>{
+  const share = async () => {
 
-    if((navigator as any).share){
+    if (!inviteUrl) return;
 
-      try{
-        await (navigator as any).share({
-          title:"ひそひそ",
-          text:"このアプリ一緒に使おう",
-          url:inviteUrl
+    if (navigator.share) {
+
+      try {
+        await navigator.share({
+          title: "ひそひそ",
+          text: "このアプリ一緒に使おう",
+          url: inviteUrl
         });
-      }catch{}
+      } catch {}
 
-    }else{
+    } else {
       copy();
     }
 
   };
 
-  return(
+  return (
 
-    <div style={{padding:20,maxWidth:420,margin:"0 auto"}}>
-
-      <button onClick={()=>navigate(-1)}>
-        ← 戻る
-      </button>
-
-      <h2 style={{marginTop:20}}>
-        友だちを招待
-      </h2>
-
-      <p>
-        招待するとポイントがもらえます
-      </p>
+    <div style={{
+      minHeight: "100svh",
+      background: "#eaf3ff",
+      display: "flex",
+      justifyContent: "center",
+      paddingTop: 30
+    }}>
 
       <div style={{
-        display:"flex",
-        justifyContent:"center",
-        marginTop:20
+        width: "100%",
+        maxWidth: 420,
+        padding: 20
       }}>
-        <QRCodeSVG value={inviteUrl} size={220}/>
+
+        <button onClick={() => navigate(-1)}>
+          ← 戻る
+        </button>
+
+        <h2 style={{
+          textAlign: "center",
+          marginTop: 10
+        }}>
+          友だちを招待
+        </h2>
+
+        <p style={{
+          textAlign: "center",
+          fontSize: 14
+        }}>
+          QRかリンクで招待できます　100P贈呈
+        </p>
+
+        {inviteUrl && (
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: 20
+          }}>
+            <QRCodeSVG value={inviteUrl} size={160} />
+          </div>
+        )}
+
+        <div style={{
+          marginTop: 16,
+          fontSize: 13,
+          wordBreak: "break-all",
+          textAlign: "center"
+        }}>
+          {inviteUrl}
+        </div>
+
+        <button
+          style={{
+            marginTop: 16,
+            width: "100%",
+            height: 48,
+            borderRadius: 10,
+            border: "none"
+          }}
+          onClick={copy}
+        >
+          リンクをコピー
+        </button>
+
+        <button
+          style={{
+            marginTop: 10,
+            width: "100%",
+            height: 48,
+            borderRadius: 10,
+            border: "none"
+          }}
+          onClick={share}
+        >
+          共有する
+        </button>
+
+        <div style={{
+          marginTop: 30,
+          padding: 16,
+          background: "#ffffff",
+          borderRadius: 10
+        }}>
+
+          <h3 style={{ marginTop: 0 }}>
+            📱ホーム画面に追加
+          </h3>
+
+          <ol style={{
+            fontSize: 14,
+            paddingLeft: 20,
+            lineHeight: 1.8
+          }}>
+            <li>Safari下の「共有」ボタン</li>
+            <li>「ホーム画面に追加」</li>
+            <li>右上「追加」</li>
+          </ol>
+
+          <p style={{
+            fontSize: 13,
+            marginTop: 10
+          }}>
+            ホーム画面からアプリのように開けます
+          </p>
+
+        </div>
+
       </div>
-
-      <div style={{
-        marginTop:20,
-        wordBreak:"break-all",
-        fontSize:14
-      }}>
-        {inviteUrl}
-      </div>
-
-      <button
-        style={{
-          marginTop:20,
-          width:"100%",
-          height:48,
-          borderRadius:10
-        }}
-        onClick={copy}
-      >
-        リンクをコピー
-      </button>
-
-      <button
-        style={{
-          marginTop:10,
-          width:"100%",
-          height:48,
-          borderRadius:10
-        }}
-        onClick={share}
-      >
-        共有する
-      </button>
 
     </div>
 

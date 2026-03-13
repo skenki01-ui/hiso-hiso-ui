@@ -90,6 +90,8 @@ export default function GirlChat() {
   const { id } = useParams();
   const girlId = (id || "") as GirlId;
 
+  const userId = localStorage.getItem("user_id") || "guest";
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -111,7 +113,7 @@ export default function GirlChat() {
 
   }, [girlId]);
 
-  const roomId = `girl_${girlId}`;
+  const roomId = `girl_${girlId}_${userId}`;
 
   const midnightSub = hasMidnightSub();
   const fullSub = hasFullSub();
@@ -220,7 +222,12 @@ export default function GirlChat() {
 
     const { data: userData } = await supabase
       .from("messages")
-      .insert([{ room_id: roomId, role: "user", content: text }])
+      .insert([{
+        room_id: roomId,
+        user_id: userId,
+        role: "user",
+        content: text
+      }])
       .select()
       .single();
 
@@ -237,7 +244,12 @@ export default function GirlChat() {
     await typeAssistantMessage(aiText);
 
     await supabase.from("messages").insert([
-      { room_id: roomId, role: "assistant", content: aiText }
+      {
+        room_id: roomId,
+        user_id: userId,
+        role: "assistant",
+        content: aiText
+      }
     ]);
 
   }

@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from "../../src/lib/supabase";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 

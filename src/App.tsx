@@ -15,13 +15,13 @@ import GirlChat from "./pages/chat/GirlChat";
 import FreeChat from "./pages/chat/FreeChat";
 import LoungeChat from "./pages/chat/LoungeChat";
 
-import PointsPurchase from "./pages/purchase/PointsPurchase";
 import SubscriptionPurchase from "./pages/purchase/SubscriptionPurchase";
 import SubSuccess from "./pages/purchase/SubSuccess";
 import PointsSuccess from "./pages/purchase/PointsSuccess";
 
 import About from "./pages/about/About";
 import PointsAbout from "./pages/about/PointsAbout";
+import PointsBalance from "./pages/about/PointsBalance";
 
 import Share from "./pages/share/Share";
 import Question from "./pages/components/modal/Question";
@@ -55,7 +55,6 @@ export default function App() {
         <Route path="/chat/free" element={<FreeChat />} />
 
         {/* 課金 */}
-        <Route path="/purchase/points" element={<PointsPurchase />} />
         <Route path="/purchase/subscription" element={<SubscriptionPurchase />} />
 
         {/* Stripe成功 */}
@@ -65,6 +64,7 @@ export default function App() {
         {/* 説明 */}
         <Route path="/about" element={<About />} />
         <Route path="/about/points" element={<PointsAbout />} />
+        <Route path="/about/balance" element={<PointsBalance />} />
 
         {/* その他 */}
         <Route path="/share" element={<Share />} />

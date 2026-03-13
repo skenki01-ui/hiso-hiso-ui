@@ -1,9 +1,8 @@
-// src/pages/Register.tsx
-
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AskLaterModal from "./components/modal/Question";
 import InstallGuide from "../components/InstallGuide";
+import ShareBox from "../components/ShareBox";
 import { ensureUser } from "../lib/user";
 import { loadPoint } from "../utils/loadPoint";
 
@@ -57,7 +56,7 @@ export default function Register() {
 
   return (
     <>
-      <InstallGuide />
+    {/* <InstallGuide /> */}
 
       <div
         style={{
@@ -124,6 +123,10 @@ export default function Register() {
             </button>
 
           </div>
+
+          {/* ここ追加 */}
+          <ShareBox />
+
         </div>
       </div>
 
