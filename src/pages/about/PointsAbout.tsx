@@ -26,9 +26,9 @@ export default function PointsAbout() {
         sessionId: data.id,
       });
 
-    } catch (e) {
-
-      alert("決済ページの作成に失敗しました");
+    } catch (e: any) {
+  alert(JSON.stringify(e));
+}
 
     }
 
