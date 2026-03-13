@@ -1,20 +1,14 @@
-console.log("checkout API started");
-
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2023-10-16",
 });
 
-export default async function handler(req: any, res: any) {
-
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+export async function POST(req: Request) {
 
   try {
 
-    const { priceId } = req.body;
+    const { priceId } = await req.json();
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -28,16 +22,17 @@ export default async function handler(req: any, res: any) {
       cancel_url: "https://hisohiso.vercel.app/about/points",
     });
 
-    res.status(200).json({ id: session.id });
+    return Response.json({ id: session.id });
 
   } catch (error: any) {
 
-  console.log("STRIPE ERROR:", error);
+    console.log("STRIPE ERROR", error);
 
-  res.status(500).json({
-    error: error.message
-  });
+    return Response.json(
+      { error: error.message },
+      { status: 500 }
+    );
 
-}
+  }
 
 }
