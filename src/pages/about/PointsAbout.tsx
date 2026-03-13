@@ -30,9 +30,7 @@ export default function PointsAbout() {
   alert(JSON.stringify(e));
 }
 
-    }
-
-  };
+    };
 
   return (
     <div className="points-card">
