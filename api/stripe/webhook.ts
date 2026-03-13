@@ -1,34 +1,35 @@
 import Stripe from "stripe";
-import { supabase } from "../../src/lib/supabase";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2023-10-16" as any,
+});
 
-export async function POST(req: Request) {
+export default async function handler(req: any, res: any) {
 
-  const body = await req.text();
+  const sig = req.headers["stripe-signature"];
 
-  const sig = req.headers.get("stripe-signature") as string;
+  try {
 
-  const event = stripe.webhooks.constructEvent(
-    body,
-    sig,
-    process.env.STRIPE_WEBHOOK_SECRET as string
-  );
+    const event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET as string
+    );
 
-  if (event.type === "checkout.session.completed") {
+    if (event.type === "checkout.session.completed") {
 
-    const session = event.data.object as Stripe.Checkout.Session;
+      const session = event.data.object;
 
-    const userId = session.metadata?.userId;
-    const point = Number(session.metadata?.point);
+      console.log("payment success", session);
 
-    if (userId && point) {
-      await supabase.rpc("add_point", {
-        uid: userId,
-        p: point
-      });
     }
-  }
 
-  return new Response("ok");
+    res.json({ received: true });
+
+  } catch (err) {
+
+    console.log(err);
+    res.status(400).send(`Webhook Error`);
+
+  }
 }

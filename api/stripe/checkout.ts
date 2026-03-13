@@ -1,38 +1,36 @@
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2023-10-16" as any,
 });
 
-export async function POST(req: Request) {
+export default async function handler(req: any, res: any) {
+
+  if (req.method !== "POST") {
+    res.status(405).end();
+    return;
+  }
+
+  const { priceId } = req.body;
 
   try {
 
-    const { priceId } = await req.json();
-
     const session = await stripe.checkout.sessions.create({
-      mode: "payment",
+      payment_method_types: ["card"],
       line_items: [
         {
           price: priceId,
           quantity: 1,
         },
       ],
-      success_url: "https://hisohiso.vercel.app",
-      cancel_url: "https://hisohiso.vercel.app/about/points",
+      mode: "payment",
+      success_url: "https://your-domain.com/success",
+      cancel_url: "https://your-domain.com/cancel",
     });
 
-    return Response.json({ id: session.id });
+    res.status(200).json({ id: session.id });
 
-  } catch (error: any) {
-
-    console.log("STRIPE ERROR", error);
-
-    return Response.json(
-      { error: error.message },
-      { status: 500 }
-    );
-
+  } catch (err) {
+    res.status(500).json({ error: err });
   }
-
 }
