@@ -30,14 +30,14 @@ export default async function handler(req: any, res: any) {
 
     res.status(200).json({ id: session.id });
 
-  } catch (error) {
+  } catch (error: any) {
 
-    console.error("Stripe error:", error);
+  console.log("STRIPE ERROR:", error);
 
-    res.status(500).json({
-      error: "Stripe session failed",
-    });
+  res.status(500).json({
+    error: error.message
+  });
 
-  }
+}
 
 }
