@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AskLaterModal from "./components/modal/Question";
-import InstallGuide from "../components/InstallGuide";
 import ShareBox from "../components/ShareBox";
 import { ensureUser } from "../lib/user";
 import { loadPoint } from "../utils/loadPoint";
@@ -56,7 +55,6 @@ export default function Register() {
 
   return (
     <>
-    {/* <InstallGuide /> */}
 
       <div
         style={{
@@ -75,7 +73,7 @@ export default function Register() {
           </h1>
 
           <p style={{ textAlign: "center", fontSize: 14 }}>
-            夜のひととき雑談アプリ
+            AIキャラクターと会話できるチャットサービス
           </p>
 
           <div style={{ fontSize: 12, marginBottom: 4 }}>
@@ -124,13 +122,41 @@ export default function Register() {
 
           </div>
 
-          {/* ここ追加 */}
+          {/* QR共有 */}
           <ShareBox />
+
+          {/* Stripe審査用フッター */}
+          <div
+            style={{
+              marginTop: 40,
+              textAlign: "center",
+              fontSize: 12,
+              color: "#666",
+              lineHeight: 1.8,
+            }}
+          >
+            <a href="/terms">利用規約</a> ｜{" "}
+            <a href="/privacy">プライバシーポリシー</a> ｜{" "}
+            <a href="/tokushoho">特定商取引法</a> ｜{" "}
+            <a href="/contact">お問い合わせ</a>
+          </div>
+
+          <div
+            style={{
+              marginTop: 10,
+              textAlign: "center",
+              fontSize: 11,
+              color: "#999"
+            }}
+          >
+            本サービスは18歳以上を対象としています
+          </div>
 
         </div>
       </div>
 
       <AskLaterModal open={askOpen} onClose={() => setAskOpen(false)} />
+
     </>
   );
 }

@@ -16,7 +16,9 @@ export default function Share() {
       localStorage.setItem("ref_code", code);
     }
 
-    const invite = `${window.location.origin}/register?ref=${code}`;
+    // registerページ固定
+    const origin = window.location.origin;
+    const invite = `${origin}/register?ref=${code}`;
 
     setInviteUrl(invite);
 
@@ -133,36 +135,6 @@ export default function Share() {
         >
           共有する
         </button>
-
-        <div style={{
-          marginTop: 30,
-          padding: 16,
-          background: "#ffffff",
-          borderRadius: 10
-        }}>
-
-          <h3 style={{ marginTop: 0 }}>
-            📱ホーム画面に追加
-          </h3>
-
-          <ol style={{
-            fontSize: 14,
-            paddingLeft: 20,
-            lineHeight: 1.8
-          }}>
-            <li>Safari下の「共有」ボタン</li>
-            <li>「ホーム画面に追加」</li>
-            <li>右上「追加」</li>
-          </ol>
-
-          <p style={{
-            fontSize: 13,
-            marginTop: 10
-          }}>
-            ホーム画面からアプリのように開けます
-          </p>
-
-        </div>
 
       </div>
 

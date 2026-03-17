@@ -24,7 +24,12 @@ import PointsAbout from "./pages/about/PointsAbout";
 import PointsBalance from "./pages/about/PointsBalance";
 
 import Share from "./pages/share/Share";
-import Question from "./pages/components/modal/Question";
+
+/* 法律ページ */
+import Terms from "./pages/legal/Terms";
+import Privacy from "./pages/legal/Privacy";
+import Tokushoho from "./pages/legal/Tokushoho";
+import Contact from "./pages/legal/Contact";
 
 export default function App() {
   return (
@@ -66,14 +71,20 @@ export default function App() {
         <Route path="/about/points" element={<PointsAbout />} />
         <Route path="/about/balance" element={<PointsBalance />} />
 
-        {/* その他 */}
+        {/* 法律ページ */}
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/tokushoho" element={<Tokushoho />} />
+        <Route path="/contact" element={<Contact />} />
+
+        {/* シェア */}
         <Route path="/share" element={<Share />} />
-        <Route path="/question" element={<Question />} />
 
         {/* 不正URL */}
         <Route path="*" element={<Navigate to="/register" replace />} />
 
       </Routes>
+
     </BrowserRouter>
   );
 }

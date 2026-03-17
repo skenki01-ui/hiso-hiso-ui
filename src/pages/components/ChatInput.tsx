@@ -7,7 +7,7 @@ export default function ChatInput() {
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
+const styles = {
   wrap: {
     display: "flex",
     gap: 8,
