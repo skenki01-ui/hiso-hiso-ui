@@ -4,10 +4,12 @@ const payjp = Payjp(process.env.PAYJP_SECRET_KEY);
 
 export default async function handler(req, res) {
   try {
+    const { token } = req.body; // ←これ追加
+
     const charge = await payjp.charges.create({
       amount: 500,
       currency: "jpy",
-      card: "tok_visa", // テスト用
+      card: token, // ←ここ変える
       description: "テスト課金"
     });
 
