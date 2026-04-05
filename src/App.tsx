@@ -31,7 +31,7 @@ import Tokushoho from "./pages/legal/Tokushoho";
 import Contact from "./pages/legal/Contact";
 
 /* 🔥 ここ修正 */
-import Pay from "./pages/Pay";
+import Pay from "./pages/PayPage";
 
 export default function App() {
   return (
