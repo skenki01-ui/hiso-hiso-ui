@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function PointsSuccess() {
+export default function PointSuccess() {
 
   const navigate = useNavigate();
 
@@ -12,13 +12,13 @@ export default function PointsSuccess() {
 
     if (p) {
 
-      const current = Number(localStorage.getItem("points") || 0);
+      const current = Number(localStorage.getItem("point") || 0);
 
       const add = Number(p);
 
       const total = current + add;
 
-      localStorage.setItem("points", String(total));
+      localStorage.setItem("point", String(total));
 
     }
 

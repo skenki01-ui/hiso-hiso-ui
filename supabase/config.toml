@@ -9,7 +9,7 @@ enabled = true
 # Port to use for the API URL.
 port = 54321
 # Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
-# endpoints. `public` and `graphql_public` schemas are included by default.
+# endpoint. `public` and `graphql_public` schemas are included by default.
 schemas = ["public", "graphql_public"]
 # Extra schemas to add to the search_path of every request.
 extra_search_path = ["public", "extensions"]
@@ -18,7 +18,7 @@ extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [api.tls]
-# Enable HTTPS endpoints locally using a self-signed certificate.
+# Enable HTTPS endpoint locally using a self-signed certificate.
 enabled = false
 # Paths to self-signed certificate pair.
 # cert_path = "../certs/my-cert.pem"

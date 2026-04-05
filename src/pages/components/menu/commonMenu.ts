@@ -15,7 +15,7 @@ export function buildCommonMenuItems(
       label: "ポイントについて",
       onClick: () => {
         close();
-        navigate("/purchase/points");
+        navigate("/purchase/point");
       },
     },
     {

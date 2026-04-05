@@ -1,4 +1,4 @@
-export default function PointsBalance() {
+export default function PointBalance() {
   return (
     <div>
       ポイント残高ページ

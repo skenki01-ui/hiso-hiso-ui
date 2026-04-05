@@ -1,9 +1,8 @@
-import { hasMidnightSub, hasFullSub } from "../../utils/subscription";
+import { isDayPassActive } from "../../utils/daypass";
 import { useEffect, useRef, useState } from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom"
 import MenuModal from "../components/MenuModal"
 import { supabase } from "../../lib/supabase"
-import { getPoint, usePoint } from "../../utils/point"
 import { generateReply } from "../../services/aiEngine"
 import "./Chat.css"
 
@@ -42,7 +41,6 @@ function getWindowStart(){
   if(h < 5) return new Date(y,m,day-1,20).getTime()
 
   return new Date(y,m,day,5).getTime()
-
 }
 
 function loadTurnState(){
@@ -50,14 +48,12 @@ function loadTurnState(){
   const allowance = getTurnAllowance()
   const start = getWindowStart()
 
-  const savedStart = Number(localStorage.getItem("hs_free_turn_start") || "0")
-  const savedRemaining = Number(localStorage.getItem("hs_free_turn_remaining") || allowance)
+  const savedStart = Number(localStorage.getItem("hs_turn_window_start") || "0")
+  const savedRemaining = Number(localStorage.getItem("hs_turn_remaining") || allowance)
 
   if(savedStart !== start){
-
-    localStorage.setItem("hs_free_turn_start",String(start))
-    localStorage.setItem("hs_free_turn_remaining",String(allowance))
-
+    localStorage.setItem("hs_turn_window_start",String(start))
+    localStorage.setItem("hs_turn_remaining",String(allowance))
     return allowance
   }
 
@@ -65,7 +61,7 @@ function loadTurnState(){
 }
 
 function saveRemaining(n:number){
-  localStorage.setItem("hs_free_turn_remaining",String(n))
+  localStorage.setItem("hs_turn_remaining",String(n))
 }
 
 function getNextRecoveryText(){
@@ -82,6 +78,7 @@ function getNextRecoveryText(){
 export default function FreeChat(){
 
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
 
   const genre = searchParams.get("genre") || ""
@@ -103,29 +100,46 @@ export default function FreeChat(){
 
   const roomId = `free_chat_${userId}`
 
-  const midnightSub = hasMidnightSub()
-  const fullSub = hasFullSub()
-  const unlimited = fullSub || (midnightSub && isNightTime())
+  // 🔥 新サブスク判定（ここが完成形）
+  const subType = localStorage.getItem("hs_sub_type")
+
+  const unlimited =
+    subType === "full" ||
+    (subType === "night" && isNightTime()) ||
+    isDayPassActive()
 
   useEffect(()=>{
 
     setRemaining(loadTurnState())
-    setPoint(getPoint())
+
+    async function loadPoint(){
+      const {data} = await supabase
+        .from("users")
+        .select("point")
+        .eq("id",userId)
+        .single()
+
+      if(data){
+        setPoint(data.point || 0)
+      }
+    }
+
+    loadPoint()
 
     const saved = localStorage.getItem("hs_free_ai_name") || ""
     setAiName(saved)
 
-  },[])
+  },[location])
 
   useEffect(()=>{
 
     async function loadMessages(){
 
       const {data} = await supabase
-      .from("messages")
-      .select("*")
-      .eq("room_id",roomId)
-      .order("created_at",{ascending:true})
+        .from("messages")
+        .select("*")
+        .eq("room_id",roomId)
+        .order("created_at",{ascending:true})
 
       if(data) setMessages(data as Message[])
 
@@ -154,15 +168,14 @@ export default function FreeChat(){
       setMessages(prev=>
         prev.map(m=>
           m.id===id
-          ? {...m,content:full.slice(0,i+1)}
-          : m
+            ? {...m,content:full.slice(0,i+1)}
+            : m
         )
       )
 
     }
 
     setIsTyping(false)
-
   }
 
   async function sendMessage(){
@@ -176,19 +189,27 @@ export default function FreeChat(){
     if(unlimited || currentRemaining > 0){
 
       if(!unlimited){
-
         const next = currentRemaining - 1
         saveRemaining(next)
         setRemaining(next)
-
       }
 
     }else{
 
-      const ok = usePoint(5)
+      const res = await fetch("http://localhost:3000/use-point",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          user_id:userId,
+          amount:5
+        })
+      })
 
-      if(!ok){
+      const data = await res.json()
 
+      if(!data.success){
         setMessages(prev=>[
           ...prev,
           {
@@ -197,12 +218,10 @@ export default function FreeChat(){
             content:`無料ターンを使い切りました\n${getNextRecoveryText()}\nまたは5pで続けられます`
           }
         ])
-
         return
       }
 
-      setPoint(getPoint())
-
+      setPoint(data.point)
     }
 
     setInput("")
@@ -239,104 +258,101 @@ export default function FreeChat(){
         role:"assistant",
         content:aiText
       }])
-
   }
 
   return(
 
-  <div className="chat-page">
+    <div className="chat-page">
 
-    <div className="chat-header">
-
-      <button
-        className="header-btn"
-        onClick={()=>navigate(-1)}
-      >
-        ◀︎
-      </button>
-
-      <input
-        value={aiName}
-        placeholder="好きな名前つけて"
-        onChange={(e)=>{
-          const v=e.target.value
-          setAiName(v)
-          localStorage.setItem("hs_free_ai_name",v)
-        }}
-        className="free-name-input"
-      />
-
-      <div className="header-right">
-
-        <span className="header-remaining">
-          {unlimited ? "残り ♾️" : `残り ${remaining}`} | {point}p
-        </span>
+      <div className="chat-header">
 
         <button
           className="header-btn"
-          onClick={()=>setMenuOpen(true)}
+          onClick={()=>navigate(-1)}
         >
-          三
+          ◀︎
+        </button>
+
+        <input
+          value={aiName}
+          placeholder="好きな名前つけて"
+          onChange={(e)=>{
+            const v=e.target.value
+            setAiName(v)
+            localStorage.setItem("hs_free_ai_name",v)
+          }}
+          className="free-name-input"
+        />
+
+        <div className="header-right">
+
+          <span className="header-remaining">
+            {unlimited ? "残り ♾️" : `残り ${remaining}`} | {point}p
+          </span>
+
+          <button
+            className="header-btn"
+            onClick={()=>setMenuOpen(true)}
+          >
+            三
+          </button>
+
+        </div>
+
+      </div>
+
+      <div className="chat-list">
+
+        {messages.map(m=>
+
+          m.role==="assistant"
+
+          ?(
+            <div key={m.id} className="row ai">
+              <div className="bubble ai">
+                {m.content}
+              </div>
+            </div>
+          )
+
+          :(
+            <div key={m.id} className="row me">
+              <div className="bubble me">
+                {m.content}
+              </div>
+            </div>
+          )
+        )}
+
+        <div ref={bottomRef}/>
+
+      </div>
+
+      <div className="chat-footer">
+
+        <input
+          className="chat-input"
+          value={input}
+          placeholder="メッセージを入力"
+          onChange={(e)=>setInput(e.target.value)}
+          onKeyDown={(e)=>e.key==="Enter" && sendMessage()}
+        />
+
+        <button
+          className="chat-send"
+          onClick={sendMessage}
+        >
+          送信
         </button>
 
       </div>
 
-    </div>
-
-    <div className="chat-list">
-
-      {messages.map(m=>
-
-        m.role==="assistant"
-
-        ?(
-          <div key={m.id} className="row ai">
-            <div className="bubble ai">
-              {m.content}
-            </div>
-          </div>
-        )
-
-        :(
-          <div key={m.id} className="row me">
-            <div className="bubble me">
-              {m.content}
-            </div>
-          </div>
-        )
-
-      )}
-
-      <div ref={bottomRef}/>
-
-    </div>
-
-    <div className="chat-footer">
-
-      <input
-        className="chat-input"
-        value={input}
-        placeholder="メッセージを入力"
-        onChange={(e)=>setInput(e.target.value)}
-        onKeyDown={(e)=>e.key==="Enter" && sendMessage()}
+      <MenuModal
+        open={menuOpen}
+        onClose={()=>setMenuOpen(false)}
       />
 
-      <button
-        className="chat-send"
-        onClick={sendMessage}
-      >
-        送信
-      </button>
-
     </div>
 
-    <MenuModal
-      open={menuOpen}
-      onClose={()=>setMenuOpen(false)}
-    />
-
-  </div>
-
   )
-
 }

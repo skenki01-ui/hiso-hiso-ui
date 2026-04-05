@@ -1,13 +1,19 @@
-// src/utils/loadPoint.ts
-import { getLocalUserId, getUserPoint } from "../lib/user";
+import { supabase } from "../lib/supabase";
 
 export async function loadPoint() {
-  const uid = getLocalUserId();
-  if (!uid) return;
 
-  const p = await getUserPoint(uid);
-  if (p === null) return;
+  const userId = localStorage.getItem("user_id");
 
-  // 既存UIが localStorage("point") を見てる前提を崩さない
-  localStorage.setItem("point", String(p));
+  if (!userId) return;
+
+  const { data } = await supabase
+    .from("users")
+    .select("point")
+    .eq("id", userId)
+    .single();
+
+  if (data) {
+    localStorage.setItem("point", String(data.point || 0));
+  }
+
 }

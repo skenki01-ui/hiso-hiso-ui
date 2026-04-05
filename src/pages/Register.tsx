@@ -73,8 +73,29 @@ export default function Register() {
           </h1>
 
           <p style={{ textAlign: "center", fontSize: 14 }}>
-            AIキャラクターと会話できるチャットサービス
+            AIキャラクターと会話を楽しめるチャットサービスです。無料ターンまたはポイントを利用して会話ができます。
           </p>
+
+          {/* ⭐ここ修正（料金表示） */}
+          <div
+            style={{
+              fontSize: 12,
+              marginTop: 10,
+              marginBottom: 16,
+              background: "#fff",
+              padding: 10,
+              borderRadius: 8,
+              lineHeight: 1.6
+            }}
+          >
+            ポイントについて：
+            <br />
+            ・1ターン＝5ポイント
+            <br />
+            ・1DAYパス＝80ポイント
+            <br />
+            ・月額プランあり（詳細は購入画面をご確認ください）
+          </div>
 
           <div style={{ fontSize: 12, marginBottom: 4 }}>
             未記入OK
@@ -125,7 +146,7 @@ export default function Register() {
           {/* QR共有 */}
           <ShareBox />
 
-          {/* Stripe審査用フッター */}
+          {/* ⭐審査用フッター */}
           <div
             style={{
               marginTop: 40,

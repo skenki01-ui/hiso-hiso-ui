@@ -1,34 +1,23 @@
-import { supabase } from "./supabase";
-
 export async function ensureUser(nickname: string) {
 
-  const { data, error } = await supabase
+  // 🔥 すでにあるならそれ使う（最重要）
+  const existing = localStorage.getItem("user_id");
+  if (existing) return existing;
+
+  // 🔥 新規作成は1回だけ
+  const id = crypto.randomUUID();
+
+  const { error } = await supabase
     .from("users")
     .insert({
+      id,
       nickname: nickname || "ゲスト",
       point: 100
-    })
-    .select()
-    .single();
+    });
 
-  if (error) {
-    console.error(error);
-    return null;
-  }
+  if (error) return null;
 
-  const user = data;
+  localStorage.setItem("user_id", id);
 
-  localStorage.setItem("nickname", user.nickname);
-  localStorage.setItem("point", String(user.point));
-  localStorage.setItem("user_id", user.id);
-
-  return user.id;
-}
-
-export function getLocalUserId() {
-  return localStorage.getItem("user_id");
-}
-
-export function getUserPoint() {
-  return Number(localStorage.getItem("point") || 0);
+  return id;
 }

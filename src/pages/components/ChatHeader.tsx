@@ -2,13 +2,13 @@ import { useNavigate } from "react-router-dom";
 
 type Props = {
   turns?: string;
-  points?: number;
+  point?: number;
   onMenu?: () => void;
 };
 
 export default function ChatHeader({
   turns,
-  points,
+  point,
   onMenu
 }: Props) {
 
@@ -68,7 +68,7 @@ export default function ChatHeader({
         </span>
 
         <span style={{ fontSize: 12 }}>
-          {points}p
+          {point}p
         </span>
 
         <button

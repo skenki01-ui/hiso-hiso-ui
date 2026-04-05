@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {  Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
 
 import InstallGuide from "./components/InstallGuide";
@@ -17,11 +17,10 @@ import LoungeChat from "./pages/chat/LoungeChat";
 
 import SubscriptionPurchase from "./pages/purchase/SubscriptionPurchase";
 import SubSuccess from "./pages/purchase/SubSuccess";
-import PointsSuccess from "./pages/purchase/PointsSuccess";
 
 import About from "./pages/about/About";
-import PointsAbout from "./pages/about/PointsAbout";
-import PointsBalance from "./pages/about/PointsBalance";
+import PointAbout from "./pages/about/PointsAbout";
+import PointBalance from "./pages/about/PointsBalance";
 
 import Share from "./pages/share/Share";
 
@@ -31,9 +30,12 @@ import Privacy from "./pages/legal/Privacy";
 import Tokushoho from "./pages/legal/Tokushoho";
 import Contact from "./pages/legal/Contact";
 
+/* 🔥 追加 */
+import Pay from "./pages/Pay";
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <>
 
       <InstallGuide />
 
@@ -61,15 +63,15 @@ export default function App() {
 
         {/* 課金 */}
         <Route path="/purchase/subscription" element={<SubscriptionPurchase />} />
+        <Route path="/pay" element={<Pay />} />
 
-        {/* Stripe成功 */}
+        {/* 成功 */}
         <Route path="/purchase/sub-success" element={<SubSuccess />} />
-        <Route path="/purchase/points-success" element={<PointsSuccess />} />
 
         {/* 説明 */}
         <Route path="/about" element={<About />} />
-        <Route path="/about/points" element={<PointsAbout />} />
-        <Route path="/about/balance" element={<PointsBalance />} />
+        <Route path="/about/point" element={<PointAbout />} />
+        <Route path="/about/balance" element={<PointBalance />} />
 
         {/* 法律ページ */}
         <Route path="/terms" element={<Terms />} />
@@ -84,7 +86,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/register" replace />} />
 
       </Routes>
-
-    </BrowserRouter>
+</>
+    
   );
 }

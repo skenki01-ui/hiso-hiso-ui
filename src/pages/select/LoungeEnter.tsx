@@ -1,77 +1,107 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MenuModal from "../components/MenuModal";
+import { supabase } from "../../lib/supabase";
 
-/* ラウンジセッションキー */
-const SESSION_ACTIVE_KEY = "hs_lounge_session_active";
+const SESSION_KEY = "hs_lounge_session_time";
 
 export default function EnterLounge() {
 
   const nav = useNavigate();
+
+  const userId = localStorage.getItem("user_id") || "";
 
   const [ok20, setOk20] = useState(false);
   const [point, setPoint] = useState<number>(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const ENTRY_COST = 100;
+  const SESSION_TIME = 60 * 60 * 1000; // 60分
 
-  /* 初回ポイント取得 */
+  /* ===============================
+     ポイント取得
+  =============================== */
+  async function loadPoint() {
 
-  useEffect(() => {
+    if (!userId) return;
 
-    const p = localStorage.getItem("point");
+    const { data } = await supabase
+      .from("users")
+      .select("point")
+      .eq("id", userId)
+      .single();
 
-    if (p === null) {
-
-      localStorage.setItem("point", "1000");
-      setPoint(1000);
-
-    } else {
-
-      const n = Number(p);
-      setPoint(Number.isFinite(n) ? n : 0);
-
+    if (data) {
+      setPoint(data.point || 0);
     }
 
+  }
+
+  useEffect(() => {
+    loadPoint();
   }, []);
 
-  /* 入店処理 */
+  /* ===============================
+     ポイント消費
+  =============================== */
+  async function usePoint(cost: number) {
 
-  const enterLounge = () => {
+    const res = await fetch("http://localhost:3000/use-point", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        amount: cost,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert("ポイントが足りません");
+      return false;
+    }
+
+    setPoint(data.point || 0);
+
+    return true;
+  }
+
+  /* ===============================
+     入店処理（時間管理）
+  =============================== */
+  const enterLounge = async () => {
 
     if (!ok20) return;
 
-    const sessionActive = localStorage.getItem(SESSION_ACTIVE_KEY);
+    const now = Date.now();
 
-    /* 既に入店済みなら無料再入店 */
+    const saved = localStorage.getItem(SESSION_KEY);
+    const sessionTime = saved ? Number(saved) : 0;
 
-    if (sessionActive) {
+    const stillActive = sessionTime && (now - sessionTime < SESSION_TIME);
 
+    // 🔥 セッション有効なら無料
+    if (stillActive) {
       nav("/lounge/chat");
       return;
-
     }
 
-    /* 初回入店 */
+    // 🔥 新規入店（課金）
+    const ok = await usePoint(ENTRY_COST);
+    if (!ok) return;
 
-    if (point < ENTRY_COST) {
-      alert("ポイントが足りません");
-      return;
-    }
-
-    const next = point - ENTRY_COST;
-
-    localStorage.setItem("point", String(next));
-    setPoint(next);
-
-    /* セッション開始 */
-
-    localStorage.setItem(SESSION_ACTIVE_KEY, "1");
+    localStorage.setItem(SESSION_KEY, String(now));
 
     nav("/lounge/chat");
 
   };
 
+  /* ===============================
+     メニュー
+  =============================== */
   const menuItems = useMemo(
     () => [
       {
@@ -85,7 +115,7 @@ export default function EnterLounge() {
         label: "ポイント購入",
         onClick: () => {
           setMenuOpen(false);
-          nav("/purchase/points");
+          nav("/purchase/point");
         }
       },
       {
@@ -110,13 +140,8 @@ export default function EnterLounge() {
 
     <div style={styles.screen}>
 
-      {/* Header */}
       <div style={styles.header}>
-
-        <button
-          style={styles.back}
-          onClick={() => nav("/register")}
-        >
+        <button style={styles.back} onClick={() => nav("/register")}>
           ◀︎
         </button>
 
@@ -124,18 +149,12 @@ export default function EnterLounge() {
           🌙 ミッドナイトラウンジ
         </div>
 
-        <button
-          style={styles.menu}
-          onClick={() => setMenuOpen(true)}
-        >
+        <button style={styles.menu} onClick={() => setMenuOpen(true)}>
           ≡
         </button>
-
       </div>
 
-      {/* Body */}
       <div style={styles.body}>
-
         <div style={styles.card}>
 
           <div style={styles.desc}>
@@ -169,7 +188,6 @@ export default function EnterLounge() {
           </button>
 
         </div>
-
       </div>
 
       <MenuModal
@@ -182,18 +200,15 @@ export default function EnterLounge() {
     </div>
 
   );
+
 }
 
-/* styles */
-
 const styles: Record<string, React.CSSProperties> = {
-
   screen: {
     minHeight: "100vh",
     background: "#0f0b1f",
     color: "#fff"
   },
-
   header: {
     display: "grid",
     gridTemplateColumns: "48px 1fr 48px",
@@ -201,7 +216,6 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "12px 14px",
     background: "#1a1433"
   },
-
   back: {
     background: "transparent",
     color: "#fff",
@@ -209,12 +223,10 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 18,
     cursor: "pointer"
   },
-
   title: {
     textAlign: "center",
     fontWeight: 800
   },
-
   menu: {
     background: "transparent",
     color: "#fff",
@@ -222,11 +234,9 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 20,
     cursor: "pointer"
   },
-
   body: {
     padding: 16
   },
-
   card: {
     background: "#1f1840",
     borderRadius: 12,
@@ -234,18 +244,15 @@ const styles: Record<string, React.CSSProperties> = {
     display: "grid",
     gap: 16
   },
-
   desc: {
     lineHeight: 1.6,
     opacity: 0.9
   },
-
   check: {
     display: "flex",
     gap: 8,
     alignItems: "center"
   },
-
   enter: {
     padding: "12px 14px",
     borderRadius: 10,
@@ -255,5 +262,4 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 800,
     cursor: "pointer"
   }
-
 };

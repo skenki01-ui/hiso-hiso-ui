@@ -55,7 +55,7 @@ export default function About() {
           登録する
         </button>
 
-        <button onClick={() => navigate("/purchase/points")}>
+        <button onClick={() => navigate("/purchase/point")}>
           ポイント購入
         </button>
 
