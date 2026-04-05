@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
 
 import InstallGuide from "./components/InstallGuide";
@@ -30,12 +30,11 @@ import Privacy from "./pages/legal/Privacy";
 import Tokushoho from "./pages/legal/Tokushoho";
 import Contact from "./pages/legal/Contact";
 
-/* 🔥 ここ修正 */
 import Pay from "./pages/PayPage";
 
 export default function App() {
   return (
-    <>
+    <BrowserRouter>
       <InstallGuide />
 
       <Routes>
@@ -72,6 +71,6 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/register" replace />} />
       </Routes>
-    </>
+    </BrowserRouter>
   );
 }
