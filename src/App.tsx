@@ -35,8 +35,7 @@ import Pay from "./pages/PayPage";
 export default function App() {
   return (
     <BrowserRouter>
-      <InstallGuide />
-
+   
       <Routes>
         <Route path="/" element={<Navigate to="/register" replace />} />
 
