@@ -1,8 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
 
-import InstallGuide from "./components/InstallGuide";
-
 import Register from "./pages/Register";
 
 import BoySelect from "./pages/select/BoySelect";
