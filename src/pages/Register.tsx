@@ -19,12 +19,12 @@ export default function Register() {
       setName(saved);
     }
 
-    initUser();
+    // 🔥 ここ修正（try-catchで囲む）
+    initUserSafe();
 
   }, []);
 
-  async function initUser() {
-
+  async function initUserSafe() {
     try {
 
       const nickname = (localStorage.getItem("nickname") || "").trim();
@@ -50,10 +50,16 @@ export default function Register() {
       localStorage.setItem("nickname", nickname);
     }
 
-    const userId = await ensureUser(nickname);
+    try {
 
-    if (userId) {
-      localStorage.setItem("user_id", userId);
+      const userId = await ensureUser(nickname);
+
+      if (userId) {
+        localStorage.setItem("user_id", userId);
+      }
+
+    } catch (e) {
+      console.error("go error:", e);
     }
 
     navigate(path);
@@ -82,7 +88,6 @@ export default function Register() {
             AIキャラクターと会話を楽しめるチャットサービスです。無料ターンまたはポイントを利用して会話ができます。
           </p>
 
-          {/* ⭐ここ修正（料金表示） */}
           <div
             style={{
               fontSize: 12,
@@ -149,10 +154,8 @@ export default function Register() {
 
           </div>
 
-          {/* QR共有 */}
           <ShareBox />
 
-          {/* ⭐審査用フッター */}
           <div
             style={{
               marginTop: 40,
