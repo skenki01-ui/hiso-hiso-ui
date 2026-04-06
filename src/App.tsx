@@ -22,7 +22,7 @@ import PointBalance from "./pages/about/PointsBalance";
 
 import Share from "./pages/share/Share";
 
-/* 法律ページ */
+//* 法律ページ *//
 import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
 import Tokushoho from "./pages/legal/Tokushoho";
