@@ -2,22 +2,32 @@ import { supabase } from "./supabase";
 
 export async function ensureUser(nickname: string) {
 
-  const existing = localStorage.getItem("user_id");
-  if (existing) return existing;
+  try {
 
-  const id = crypto.randomUUID();
+    const existing = localStorage.getItem("user_id");
+    if (existing) return existing;
 
-  const { error } = await supabase
-    .from("users")
-    .insert({
-      id,
-      nickname: nickname || "ゲスト",
-      point: 100
-    });
+    const id = crypto.randomUUID();
 
-  if (error) return null;
+    const { error } = await supabase
+      .from("users")
+      .insert({
+        id,
+        nickname: nickname || "ゲスト",
+        point: 100
+      });
 
-  localStorage.setItem("user_id", id);
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return null;
+    }
 
-  return id;
+    localStorage.setItem("user_id", id);
+
+    return id;
+
+  } catch (e) {
+    console.error("ensureUser crash:", e);
+    return null;
+  }
 }
