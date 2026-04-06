@@ -4,10 +4,18 @@ export async function ensureUser(nickname: string) {
 
   try {
 
+    // 🔥 すでにあるならそれ使う
     const existing = localStorage.getItem("user_id");
     if (existing) return existing;
 
+    // 🔥 新規作成
     const id = crypto.randomUUID();
+
+    // 🔥 supabase undefined防止
+    if (!supabase) {
+      console.error("supabase not initialized");
+      return id;
+    }
 
     const { error } = await supabase
       .from("users")
@@ -18,8 +26,8 @@ export async function ensureUser(nickname: string) {
       });
 
     if (error) {
-      console.error("Supabase insert error:", error);
-      return null;
+      console.error("supabase insert error:", error);
+      return id;
     }
 
     localStorage.setItem("user_id", id);
@@ -28,6 +36,10 @@ export async function ensureUser(nickname: string) {
 
   } catch (e) {
     console.error("ensureUser crash:", e);
-    return null;
+
+    // 🔥 最悪でもUI止めない
+    const fallbackId = crypto.randomUUID();
+    localStorage.setItem("user_id", fallbackId);
+    return fallbackId;
   }
 }
