@@ -25,15 +25,21 @@ export default function Register() {
 
   async function initUser() {
 
-    const nickname = (localStorage.getItem("nickname") || "").trim();
+    try {
 
-    const userId = await ensureUser(nickname);
+      const nickname = (localStorage.getItem("nickname") || "").trim();
 
-    if (userId) {
-      localStorage.setItem("user_id", userId);
+      const userId = await ensureUser(nickname);
+
+      if (userId) {
+        localStorage.setItem("user_id", userId);
+      }
+
+      await loadPoint();
+
+    } catch (e) {
+      console.error("initUser error:", e);
     }
-
-    await loadPoint();
   }
 
   async function go(path: string) {
