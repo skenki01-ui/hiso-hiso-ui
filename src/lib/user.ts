@@ -1,3 +1,5 @@
+import { supabase } from "./supabase";
+
 export async function ensureUser(nickname: string) {
 
   // 🔥 すでにあるならそれ使う（最重要）
@@ -5,7 +7,7 @@ export async function ensureUser(nickname: string) {
   if (existing) return existing;
 
   // 🔥 新規作成は1回だけ
-  const id = crypto.randomUUID();
+  const id = crypto.randomUUID();aa
 
   const { error } = await supabase
     .from("users")
