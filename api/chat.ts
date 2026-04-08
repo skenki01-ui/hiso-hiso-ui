@@ -15,19 +15,20 @@ export default async function handler(req: any, res: any) {
       })
     })
 
-    const data = await response.json()
-
     // 👇 ここ追加
-    console.log("OPENAI RESPONSE:", data)
+    if (!response.ok) {
+      const errText = await response.text()
+      console.log("OPENAI ERROR:", errText)
 
-    if (!data.choices || !data.choices[0]) {
       return res.status(500).json({
-        reply: "OpenAIエラー"
+        reply: "OpenAIエラー出てる"
       })
     }
 
+    const data = await response.json()
+
     res.status(200).json({
-      reply: data.choices[0].message.content
+      reply: data.choices?.[0]?.message?.content || "……"
     })
 
   } catch (e) {
