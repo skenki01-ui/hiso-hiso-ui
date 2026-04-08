@@ -21,7 +21,7 @@ export default function MenuModal({ open, onClose }: Props) {
 
     const userId = localStorage.getItem("user_id") || "guest";
 
-    const res = await fetch("http://localhost:3000/use-point", {
+    const res = await fetch("/api/chat/use-point", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

@@ -46,7 +46,7 @@ export default function EnterLounge() {
   =============================== */
   async function usePoint(cost: number) {
 
-    const res = await fetch("http://localhost:3000/use-point", {
+    const res = await fetch("/api/chat/use-point", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

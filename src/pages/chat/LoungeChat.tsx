@@ -10,7 +10,7 @@ const userId = localStorage.getItem("user_id") || "guest";
 
 const API_BASE =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
-  "http://localhost:3000";
+  "/api/chat";
 
 type Role = "user" | "cast" | "help" | "system";
 

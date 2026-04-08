@@ -42,7 +42,7 @@ export default function SubscriptionPurchase() {
         return;
       }
 
-      const res = await fetch("http://localhost:3000/subscription", {
+      const res = await fetch("/api/chat/subscription", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
