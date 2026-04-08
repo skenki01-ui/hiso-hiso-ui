@@ -194,7 +194,7 @@ export default function GirlChat(){
 
     }else{
 
-      const res = await fetch("http://localhost:3000/use-point",{
+     const res = await fetch("/api/use-point",{
         method:"POST",
         headers:{
           "Content-Type":"application/json"

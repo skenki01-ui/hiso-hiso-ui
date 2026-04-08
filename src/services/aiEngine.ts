@@ -85,8 +85,8 @@ export async function generateReply({
 
   try {
 
-    const res = await fetch("http://localhost:3000/chat", {
-      method: "POST",
+    const res = await fetch("/api/chat",{
+            method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
