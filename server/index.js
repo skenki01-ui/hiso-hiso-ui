@@ -18,7 +18,40 @@ const supabase = createClient(
 const payjp = Payjp(process.env.PAYJP_SECRET_KEY);
 
 /* ===============================
-   Pay.jp単発決済（ポイント）
+   🔥 ChatGPT API（これが今回の本命）
+================================= */
+app.post("/chat", async (req, res) => {
+  try {
+
+    const { messages } = req.body;
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages,
+        temperature: 0.8
+      })
+    });
+
+    const data = await response.json();
+
+    return res.json({
+      reply: data.choices?.[0]?.message?.content || "……"
+    });
+
+  } catch (e) {
+    console.log("🔥 chat error:", e);
+    return res.json({ reply: "通信エラーが起きたみたい" });
+  }
+});
+
+/* ===============================
+   Pay.jp単発決済
 ================================= */
 app.post("/payjp", async (req, res) => {
   try {
@@ -46,7 +79,7 @@ app.post("/payjp", async (req, res) => {
 });
 
 /* ===============================
-   サブスク登録（🔥ここが今回の本命）
+   サブスク
 ================================= */
 app.post("/subscription", async (req, res) => {
   try {
@@ -57,18 +90,15 @@ app.post("/subscription", async (req, res) => {
       return res.json({ success: false });
     }
 
-    // 👤 顧客作成
     const customer = await payjp.customers.create({
       card: token
     });
 
-    // 🔁 サブスク作成
     const sub = await payjp.subscriptions.create({
       customer: customer.id,
       plan: planId
     });
 
-    // 💾 Supabaseに保存
     await supabase
       .from("users")
       .update({
@@ -106,7 +136,7 @@ app.post("/pay", async (req, res) => {
       .from("users")
       .select("point")
       .eq("id", user_id)
-      .single();
+      .maybeSingle();
 
     if (!user) {
       const { data } = await supabase
@@ -160,7 +190,7 @@ app.post("/use-point", async (req, res) => {
       .from("users")
       .select("point")
       .eq("id", user_id)
-      .single();
+      .maybeSingle();
 
     if (!user) {
       return res.json({ success: false });
