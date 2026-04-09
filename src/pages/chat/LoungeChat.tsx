@@ -490,7 +490,7 @@ export default function LoungeChat() {
   }
 
   async function usePoint(cost: number) {
-    const res = await fetch(`${API_BASE}/use-point`, {
+    const res = await fetch(`${API_BASE}/api/use-point`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: userIdLocal, amount: cost }),

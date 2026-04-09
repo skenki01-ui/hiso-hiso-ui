@@ -177,7 +177,7 @@ app.post("/pay", async (req, res) => {
 /* ===============================
    ポイント消費
 ================================= */
-app.post("/use-point", async (req, res) => {
+app.post("/api/use-point", async (req, res) => {
   try {
 
     const { user_id, amount } = req.body;
