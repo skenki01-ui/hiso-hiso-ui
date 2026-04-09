@@ -16,7 +16,7 @@ export default function Pay() {
 
     try {
 
-      const res = await fetch("/api/chat/pay", {
+      const res = await fetch("/api/pay", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
