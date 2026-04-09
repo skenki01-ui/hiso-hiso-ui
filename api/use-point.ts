@@ -1,26 +1,15 @@
-export default async function handler(req: any, res: any) {
+export default function handler(req: any, res: any) {
 
   if (req.method !== "POST") {
-    return res.status(405).end()
+    return res.status(405).json({ error: "Method Not Allowed" })
   }
 
-  try {
+  const { user_id, amount } = req.body
 
-    const { user_id, amount } = req.body
+  console.log("use-point:", user_id, amount)
 
-    // 仮処理（テスト用）
-    console.log("ポイント消費:", user_id, amount)
-
-    return res.status(200).json({
-      success: true,
-      point: 999 // 仮
-    })
-
-  } catch (e) {
-
-    return res.status(500).json({
-      success: false
-    })
-
-  }
+  return res.status(200).json({
+    success: true,
+    point: 999
+  })
 }
