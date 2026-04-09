@@ -82,6 +82,9 @@ export default function BoyChat(){
   const [point,setPoint] = useState(0)
   const [isTyping,setIsTyping] = useState(false)
 
+  // 🔥 追加
+  const [showPay,setShowPay] = useState(false)
+
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
   const boyInfo = useMemo(()=>{
@@ -95,7 +98,6 @@ export default function BoyChat(){
 
   const roomId = `boy_${boyId}_${userId}`
 
-  // 🔥 新サブスク判定
   const subType = localStorage.getItem("hs_sub_type")
 
   const unlimited =
@@ -103,8 +105,27 @@ export default function BoyChat(){
     (subType === "night" && isNightTime()) ||
     isDayPassActive()
 
+  // 🔥 キャラ別課金セリフ
+  function getPayMessage(){
+    if(boyId === "teo"){
+      return "…もう少し話してく？ここで終わるの、ちょっと寂しい"
+    }
+    if(boyId === "rei"){
+      return "…まだ話したいんやろ？ここで終わるのはもったいない"
+    }
+    if(boyId === "sora"){
+      return "え、ここで終わるん？それ絶対続きあるやつやん笑"
+    }
+    return "続き、話したいね"
+  }
+
   useEffect(()=>{
-    setRemaining(loadTurnState())
+    const r = loadTurnState()
+    setRemaining(r)
+
+    if(!unlimited && r <= 0){
+      setShowPay(true)
+    }
 
     async function loadPoint(){
       const {data} = await supabase
@@ -171,31 +192,15 @@ export default function BoyChat(){
         const next = currentRemaining - 1
         saveRemaining(next)
         setRemaining(next)
+
+        if(next === 0){
+          setTimeout(()=>setShowPay(true),500)
+        }
       }
 
     }else{
-
-      const res = await fetch("/api/use-point",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ user_id:userId, amount:5 })
-      })
-
-      const data = await res.json()
-
-      if(!data.success){
-        setMessages(prev=>[
-          ...prev,
-          {
-            id:crypto.randomUUID(),
-            role:"assistant",
-            content:`無料ターンを使い切りました\n${getNextRecoveryText()}\nまたは5pで続けられます`
-          }
-        ])
-        return
-      }
-
-      setPoint(data.point)
+      setShowPay(true)
+      return
     }
 
     setInput("")
@@ -264,6 +269,19 @@ export default function BoyChat(){
               <div className="bubble me">{m.content}</div>
             </div>
           )
+        )}
+
+        {/* 🔥 課金ブロック */}
+        {showPay && (
+          <div className="pay-box">
+            <div className="pay-text">{getPayMessage()}</div>
+            <button
+              className="pay-btn"
+              onClick={()=>navigate("/purchase")}
+            >
+              続きを話す（5p〜）
+            </button>
+          </div>
         )}
 
         <div ref={bottomRef}/>

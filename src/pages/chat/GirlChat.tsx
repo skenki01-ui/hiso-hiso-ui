@@ -82,6 +82,9 @@ export default function GirlChat(){
   const [point,setPoint] = useState(0)
   const [isTyping,setIsTyping] = useState(false)
 
+  // 🔥 追加
+  const [showPay,setShowPay] = useState(false)
+
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
   const girlInfo = useMemo(()=>{
@@ -95,7 +98,6 @@ export default function GirlChat(){
 
   const roomId = `girl_${girlId}_${userId}`
 
-  // 🔥 新サブスク判定（これが一番大事）
   const subType = localStorage.getItem("hs_sub_type")
 
   const unlimited =
@@ -103,9 +105,27 @@ export default function GirlChat(){
     (subType === "night" && isNightTime()) ||
     isDayPassActive()
 
-  useEffect(()=>{
+  // 🔥 キャラ別課金セリフ
+  function getPayMessage(){
+    if(girlId === "mio"){
+      return "…まだ、少しだけ話してく？"
+    }
+    if(girlId === "akina"){
+      return "ここで終わるの、もったいないよ"
+    }
+    if(girlId === "niko"){
+      return "えーまだしゃべりたいのに笑"
+    }
+    return "続き、話す？"
+  }
 
-    setRemaining(loadTurnState())
+  useEffect(()=>{
+    const r = loadTurnState()
+    setRemaining(r)
+
+    if(!unlimited && r <= 0){
+      setShowPay(true)
+    }
 
     async function loadPoint(){
       const {data} = await supabase
@@ -124,9 +144,7 @@ export default function GirlChat(){
   },[])
 
   useEffect(()=>{
-
     async function loadMessages(){
-
       const {data} = await supabase
         .from("messages")
         .select("*")
@@ -134,11 +152,9 @@ export default function GirlChat(){
         .order("created_at",{ascending:true})
 
       if(data) setMessages(data as Message[])
-
     }
 
     if(girlId) loadMessages()
-
   },[girlId])
 
   useEffect(()=>{
@@ -157,7 +173,6 @@ export default function GirlChat(){
     ])
 
     for(let i=0;i<full.length;i++){
-
       await sleep(TYPE_SPEED)
 
       setMessages(prev=>
@@ -167,17 +182,14 @@ export default function GirlChat(){
           : m
         )
       )
-
     }
 
     setIsTyping(false)
-
   }
 
   async function sendMessage(){
 
     const text=input.trim()
-
     if(!text || isTyping) return
 
     const currentRemaining = loadTurnState()
@@ -185,44 +197,18 @@ export default function GirlChat(){
     if(unlimited || currentRemaining > 0){
 
       if(!unlimited){
-
         const next = currentRemaining - 1
         saveRemaining(next)
         setRemaining(next)
 
+        if(next === 0){
+          setTimeout(()=>setShowPay(true),500)
+        }
       }
 
     }else{
-
-     const res = await fetch("/api/use-point",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          user_id:userId,
-          amount:5
-        })
-      })
-
-      const data = await res.json()
-
-      if(!data.success){
-
-        setMessages(prev=>[
-          ...prev,
-          {
-            id:crypto.randomUUID(),
-            role:"assistant",
-            content:`無料ターンを使い切りました\n${getNextRecoveryText()}\nまたは5pで続けられます`
-          }
-        ])
-
-        return
-      }
-
-      setPoint(data.point)
-
+      setShowPay(true)
+      return
     }
 
     setInput("")
@@ -259,19 +245,14 @@ export default function GirlChat(){
       role:"assistant",
       content:aiText
     }])
-
   }
 
   return(
-
     <div className="chat-page">
 
       <div className="chat-header">
 
-        <button
-          className="header-btn"
-          onClick={()=>navigate("/select/girl")}
-        >
+        <button className="header-btn" onClick={()=>navigate("/select/girl")}>
           ◀︎
         </button>
 
@@ -281,18 +262,13 @@ export default function GirlChat(){
         </div>
 
         <div className="header-right">
-
           <span className="header-remaining">
             {unlimited ? "残り ♾️" : `残り ${remaining}`} | {point}p
           </span>
 
-          <button
-            className="header-btn"
-            onClick={()=>setMenuOpen(true)}
-          >
+          <button className="header-btn" onClick={()=>setMenuOpen(true)}>
             三
           </button>
-
         </div>
 
       </div>
@@ -300,26 +276,31 @@ export default function GirlChat(){
       <div className="chat-list">
 
         {messages.map(m=>
-
           m.role==="assistant"
-
           ?(
             <div key={m.id} className="row ai">
               <img src={girlInfo?.img} className="avatar"/>
-              <div className="bubble ai">
-                {m.content}
-              </div>
+              <div className="bubble ai">{m.content}</div>
             </div>
           )
-
           :(
             <div key={m.id} className="row me">
-              <div className="bubble me">
-                {m.content}
-              </div>
+              <div className="bubble me">{m.content}</div>
             </div>
           )
+        )}
 
+        {/* 🔥 課金導線 */}
+        {showPay && (
+          <div className="pay-box">
+            <div className="pay-text">{getPayMessage()}</div>
+            <button
+              className="pay-btn"
+              onClick={()=>navigate("/purchase")}
+            >
+              続きを話す（5p〜）
+            </button>
+          </div>
         )}
 
         <div ref={bottomRef}/>
@@ -345,13 +326,8 @@ export default function GirlChat(){
 
       </div>
 
-      <MenuModal
-        open={menuOpen}
-        onClose={()=>setMenuOpen(false)}
-      />
+      <MenuModal open={menuOpen} onClose={()=>setMenuOpen(false)}/>
 
     </div>
-
   )
-
 }
