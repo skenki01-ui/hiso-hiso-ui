@@ -28,7 +28,7 @@ import Privacy from "./pages/legal/Privacy";
 import Tokushoho from "./pages/legal/Tokushoho";
 import Contact from "./pages/legal/Contact";
 
-import Pay from "./pages/PayPage";
+import Pay from "./pages/Pay";
 
 export default function App() {
   return (
