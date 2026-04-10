@@ -44,8 +44,12 @@ export default function Contact() {
       </p>
 
       <p>
-        <b>■メールアドレス</b>
-        <br />
+        <b>■事業者名</b><br />
+        ひそひそ運営事務局
+      </p>
+
+      <p>
+        <b>■メールアドレス</b><br />
         s_kenki@yahoo.co.jp
       </p>
 

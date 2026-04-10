@@ -12,6 +12,10 @@ export default function Register() {
   const [name, setName] = useState("");
   const [askOpen, setAskOpen] = useState(false);
 
+  // 🔥 追加
+  const [agree, setAgree] = useState(false);
+  const [adult, setAdult] = useState(false);
+
   useEffect(() => {
 
     const saved = localStorage.getItem("nickname");
@@ -19,7 +23,6 @@ export default function Register() {
       setName(saved);
     }
 
-    // 🔥 ここ修正（try-catchで囲む）
     initUserSafe();
 
   }, []);
@@ -43,6 +46,17 @@ export default function Register() {
   }
 
   async function go(path: string) {
+
+    // 🔥 チェック追加
+    if (!agree) {
+      alert("利用規約に同意してください");
+      return;
+    }
+
+    if (!adult) {
+      alert("18歳以上であることを確認してください");
+      return;
+    }
 
     const nickname = name.trim();
 
@@ -85,7 +99,7 @@ export default function Register() {
           </h1>
 
           <p style={{ textAlign: "center", fontSize: 14 }}>
-            AIキャラクターと会話を楽しめるチャットサービスです。無料ターンまたはポイントを利用して会話ができます。
+            AIキャラクターと会話を楽しめるチャットサービスです。
           </p>
 
           <div
@@ -101,11 +115,10 @@ export default function Register() {
           >
             ポイントについて：
             <br />
-            ・1ターン＝5ポイント
-            <br />
-            ・1DAYパス＝80ポイント
-            <br />
-            ・月額プランあり（詳細は購入画面をご確認ください）
+            ・1ターン＝5ポイント<br />
+            ・1ポイント＝10円<br />
+            ・1DAYパス＝80ポイント<br />
+            ・サブスクあり（1200円 / 1900円）
           </div>
 
           <div style={{ fontSize: 12, marginBottom: 4 }}>
@@ -129,6 +142,29 @@ export default function Register() {
               marginBottom: 16,
             }}
           />
+
+          {/* 🔥 同意チェック */}
+          <div style={{ fontSize: 12, marginBottom: 10 }}>
+            <label>
+              <input
+                type="checkbox"
+                checked={agree}
+                onChange={(e) => setAgree(e.target.checked)}
+              />{" "}
+              <a href="/terms">利用規約</a> に同意する
+            </label>
+          </div>
+
+          <div style={{ fontSize: 12, marginBottom: 16 }}>
+            <label>
+              <input
+                type="checkbox"
+                checked={adult}
+                onChange={(e) => setAdult(e.target.checked)}
+              />{" "}
+              18歳以上です
+            </label>
+          </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
 
@@ -169,17 +205,6 @@ export default function Register() {
             <a href="/privacy">プライバシーポリシー</a> ｜{" "}
             <a href="/tokushoho">特定商取引法</a> ｜{" "}
             <a href="/contact">お問い合わせ</a>
-          </div>
-
-          <div
-            style={{
-              marginTop: 10,
-              textAlign: "center",
-              fontSize: 11,
-              color: "#999"
-            }}
-          >
-            本サービスは18歳以上を対象としています
           </div>
 
         </div>
