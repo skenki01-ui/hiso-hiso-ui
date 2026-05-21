@@ -45,12 +45,12 @@ export default function Contact() {
 
       <p>
         <b>■事業者名</b><br />
-        ひそひそ運営事務局
+        GearDock Lab
       </p>
 
       <p>
         <b>■メールアドレス</b><br />
-        s_kenki@yahoo.co.jp
+        kunanahachi@gmail.com
       </p>
 
       <p>

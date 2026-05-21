@@ -53,7 +53,7 @@ export default function AskLaterModal({ open, onClose }: Props) {
           </Section>
 
           <Section title="年齢層">
-            {["10代", "20代", "30代", "40代", "50代以上", "答えたくない"].map(
+            {["10代","20代", "30代", "40代", "50代以上", "答えたくない"].map(
               (v) => (
                 <Radio
                   key={v}

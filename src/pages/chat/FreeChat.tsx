@@ -52,8 +52,10 @@ function loadTurnState(){
   const savedRemaining = Number(localStorage.getItem("hs_turn_remaining") || allowance)
 
   if(savedStart !== start){
+
     localStorage.setItem("hs_turn_window_start",String(start))
     localStorage.setItem("hs_turn_remaining",String(allowance))
+
     return allowance
   }
 
@@ -84,6 +86,10 @@ export default function FreeChat(){
   const genre = searchParams.get("genre") || ""
   const mode = searchParams.get("mode") || ""
 
+  // 🔥 ヨミトリ導線
+  const intro = searchParams.get("intro") || ""
+  const from = searchParams.get("from") || ""
+
   const userId = localStorage.getItem("user_id") || "guest"
 
   const [messages,setMessages] = useState<Message[]>([])
@@ -98,9 +104,13 @@ export default function FreeChat(){
 
   const bottomRef = useRef<HTMLDivElement | null>(null)
 
-  const roomId = `free_chat_${userId}`
+  // 🔥 ヨミトリ結果ごとに部屋分離
+  const introKey = intro
+    ? btoa(unescape(encodeURIComponent(intro))).slice(0,20)
+    : "normal"
 
-  // 🔥 新サブスク判定（ここが完成形）
+  const roomId = `free_${genre}_${mode}_${introKey}_${userId}`
+
   const subType = localStorage.getItem("hs_sub_type")
 
   const unlimited =
@@ -113,6 +123,7 @@ export default function FreeChat(){
     setRemaining(loadTurnState())
 
     async function loadPoint(){
+
       const {data} = await supabase
         .from("users")
         .select("point")
@@ -129,37 +140,90 @@ export default function FreeChat(){
     const saved = localStorage.getItem("hs_free_ai_name") || ""
     setAiName(saved)
 
-  },[location])
+  },[location,userId])
 
   useEffect(()=>{
 
     async function loadMessages(){
 
-      const {data} = await supabase
+      const {data,error} = await supabase
         .from("messages")
         .select("*")
         .eq("room_id",roomId)
         .order("created_at",{ascending:true})
 
-      if(data) setMessages(data as Message[])
+      if(error){
+        console.error(error)
+        return
+      }
+
+      if(data){
+
+        const loaded = data as Message[]
+
+        // 🔥 初回だけヨミトリメッセージ
+        if(loaded.length === 0 && intro){
+
+          const introText =
+`来てくれたんだね。
+
+${intro}
+
+今ちょっと、
+心の奥で引っかかってることある？
+
+よかったら、
+そのまま話してみて。`
+
+          const introMessage: Message = {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: introText
+          }
+
+          setMessages([introMessage])
+
+          await supabase
+            .from("messages")
+            .insert([{
+              room_id: roomId,
+              user_id: userId,
+              role: "assistant",
+              content: introText
+            }])
+
+          return
+        }
+
+        setMessages(loaded)
+      }
 
     }
 
     loadMessages()
 
-  },[])
+  },[roomId,intro,userId])
 
   useEffect(()=>{
-    bottomRef.current?.scrollIntoView({behavior:"smooth"})
+    bottomRef.current?.scrollIntoView({
+      behavior:"smooth"
+    })
   },[messages,isTyping])
 
   async function typeAssistantMessage(full:string){
 
     setIsTyping(true)
 
-    const id=crypto.randomUUID()
+    const id = crypto.randomUUID()
 
-    setMessages(prev=>[...prev,{id,role:"assistant",content:""}])
+    setMessages(prev=>[
+      ...prev,
+      {
+        id,
+        role:"assistant",
+        content:""
+      }
+    ])
 
     for(let i=0;i<full.length;i++){
 
@@ -168,11 +232,13 @@ export default function FreeChat(){
       setMessages(prev=>
         prev.map(m=>
           m.id===id
-            ? {...m,content:full.slice(0,i+1)}
+            ? {
+                ...m,
+                content:full.slice(0,i+1)
+              }
             : m
         )
       )
-
     }
 
     setIsTyping(false)
@@ -180,7 +246,7 @@ export default function FreeChat(){
 
   async function sendMessage(){
 
-    const text=input.trim()
+    const text = input.trim()
 
     if(!text || isTyping) return
 
@@ -189,14 +255,20 @@ export default function FreeChat(){
     if(unlimited || currentRemaining > 0){
 
       if(!unlimited){
+
         const next = currentRemaining - 1
+
         saveRemaining(next)
         setRemaining(next)
       }
 
     }else{
 
-      const res = await fetch("/api/use-point",{
+      const API_BASE =
+        (import.meta.env.VITE_API_BASE_URL as string | undefined)
+        || "http://localhost:3000"
+
+      const res = await fetch(`${API_BASE}/api/use-point`,{
         method:"POST",
         headers:{
           "Content-Type":"application/json"
@@ -210,14 +282,21 @@ export default function FreeChat(){
       const data = await res.json()
 
       if(!data.success){
+
         setMessages(prev=>[
           ...prev,
           {
             id:crypto.randomUUID(),
             role:"assistant",
-            content:`無料ターンを使い切りました\n${getNextRecoveryText()}\nまたは5pで続けられます`
+            content:
+`無料ターンを使い切りました
+
+${getNextRecoveryText()}
+
+または5pで続けられます`
           }
         ])
+
         return
       }
 
@@ -226,7 +305,18 @@ export default function FreeChat(){
 
     setInput("")
 
-    const {data:userData} = await supabase
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: text
+    }
+
+    setMessages(prev=>[
+      ...prev,
+      userMessage
+    ])
+
+    await supabase
       .from("messages")
       .insert([{
         room_id:roomId,
@@ -234,18 +324,24 @@ export default function FreeChat(){
         role:"user",
         content:text
       }])
-      .select()
-      .single()
 
-    if(!userData) return
-
-    setMessages(prev=>[...prev,userData as Message])
+    const historyForAI = [
+      ...messages.slice(-10).map(m=>({
+        role:m.role,
+        content:m.content
+      })),
+      {
+        role:"user" as const,
+        content:text
+      }
+    ]
 
     const aiText = await generateReply({
       character:aiName,
       genre,
       mode,
-      userMessage:text
+      userMessage:text,
+      history:historyForAI
     })
 
     await typeAssistantMessage(aiText)
@@ -267,18 +363,34 @@ export default function FreeChat(){
       <div className="chat-header">
 
         <button
+          type="button"
           className="header-btn"
-          onClick={()=>navigate(-1)}
+          onClick={()=>{
+
+            // 🔥 ヨミトリ経由ならレジスタへ
+            if(from === "yomitori"){
+
+              navigate("/")
+
+              return
+            }
+
+            navigate(-1)
+
+          }}
         >
           ◀︎
         </button>
 
         <input
           value={aiName}
-          placeholder="好きな名前つけて"
+          placeholder="呼びたい名前つけて"
           onChange={(e)=>{
-            const v=e.target.value
+
+            const v = e.target.value
+
             setAiName(v)
+
             localStorage.setItem("hs_free_ai_name",v)
           }}
           className="free-name-input"
@@ -291,6 +403,7 @@ export default function FreeChat(){
           </span>
 
           <button
+            type="button"
             className="header-btn"
             onClick={()=>setMenuOpen(true)}
           >
@@ -308,7 +421,10 @@ export default function FreeChat(){
           m.role==="assistant"
 
           ?(
-            <div key={m.id} className="row ai">
+            <div
+              key={m.id}
+              className="row ai"
+            >
               <div className="bubble ai">
                 {m.content}
               </div>
@@ -316,12 +432,16 @@ export default function FreeChat(){
           )
 
           :(
-            <div key={m.id} className="row me">
+            <div
+              key={m.id}
+              className="row me"
+            >
               <div className="bubble me">
                 {m.content}
               </div>
             </div>
           )
+
         )}
 
         <div ref={bottomRef}/>
@@ -333,14 +453,21 @@ export default function FreeChat(){
         <input
           className="chat-input"
           value={input}
-          placeholder="メッセージを入力"
+          placeholder="ここだけの話、してみる？"
           onChange={(e)=>setInput(e.target.value)}
-          onKeyDown={(e)=>e.key==="Enter" && sendMessage()}
+          onKeyDown={(e)=>{
+            if(e.key==="Enter"){
+              sendMessage()
+            }
+          }}
         />
 
         <button
+          type="button"
           className="chat-send"
-          onClick={sendMessage}
+          onClick={()=>{
+            sendMessage()
+          }}
         >
           送信
         </button>

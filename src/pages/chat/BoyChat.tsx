@@ -16,275 +16,456 @@ type BoyId = "teo" | "rei" | "sora";
 
 const TYPE_SPEED = 140;
 
-function sleep(ms:number){
-  return new Promise(res=>setTimeout(res,ms))
+function sleep(ms: number) {
+  return new Promise((res) => setTimeout(res, ms));
 }
 
-function isNightTime(){
-  const h = new Date().getHours()
-  return h >= 20 || h < 5
+function isNightTime() {
+  const h = new Date().getHours();
+  return h >= 20 || h < 5;
 }
 
-function getTurnAllowance(){
-  return isNightTime() ? 6 : 3
+function getTurnAllowance() {
+  return isNightTime() ? 6 : 3;
 }
 
-function getWindowStart(){
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = d.getMonth()
-  const day = d.getDate()
-  const h = d.getHours()
+function getWindowStart() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = d.getMonth();
+  const day = d.getDate();
+  const h = d.getHours();
 
-  if(h >= 20) return new Date(y,m,day,20).getTime()
-  if(h < 5) return new Date(y,m,day-1,20).getTime()
+  if (h >= 20) return new Date(y, m, day, 20).getTime();
+  if (h < 5) return new Date(y, m, day - 1, 20).getTime();
 
-  return new Date(y,m,day,5).getTime()
+  return new Date(y, m, day, 5).getTime();
 }
 
-function loadTurnState(){
-  const allowance = getTurnAllowance()
-  const start = getWindowStart()
+function loadTurnState() {
+  const allowance = getTurnAllowance();
+  const start = getWindowStart();
 
-  const savedStart = Number(localStorage.getItem("hs_turn_window_start") || "0")
-  const savedRemaining = Number(localStorage.getItem("hs_turn_remaining") || allowance)
+  const savedStart = Number(
+    localStorage.getItem("hs_turn_window_start") || "0"
+  );
 
-  if(savedStart !== start){
-    localStorage.setItem("hs_turn_window_start",String(start))
-    localStorage.setItem("hs_turn_remaining",String(allowance))
-    return allowance
+  const savedRemaining = Number(
+    localStorage.getItem("hs_turn_remaining") || allowance
+  );
+
+  if (savedStart !== start) {
+    localStorage.setItem(
+      "hs_turn_window_start",
+      String(start)
+    );
+
+    localStorage.setItem(
+      "hs_turn_remaining",
+      String(allowance)
+    );
+
+    return allowance;
   }
 
-  return savedRemaining
+  return savedRemaining;
 }
 
-function saveRemaining(n:number){
-  localStorage.setItem("hs_turn_remaining",String(n))
+function saveRemaining(n: number) {
+  localStorage.setItem(
+    "hs_turn_remaining",
+    String(n)
+  );
 }
 
-function getNextRecoveryText(){
-  return isNightTime() ? "次の回復は 5:00 です" : "次の回復は 20:00 です"
-}
+export default function BoyChat() {
 
-export default function BoyChat(){
+  const navigate = useNavigate();
 
-  const navigate = useNavigate()
-  const { id } = useParams()
-  const boyId = (id || "") as BoyId
+  const { id } = useParams();
 
-  const userId = localStorage.getItem("user_id") || "guest"
+  const boyId = (id || "") as BoyId;
 
-  const [messages,setMessages] = useState<Message[]>([])
-  const [input,setInput] = useState("")
-  const [menuOpen,setMenuOpen] = useState(false)
+  const userId =
+    localStorage.getItem("user_id") || "guest";
 
-  const [remaining,setRemaining] = useState(0)
-  const [point,setPoint] = useState(0)
-  const [isTyping,setIsTyping] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // 🔥 追加
-  const [showPay,setShowPay] = useState(false)
+  const [remaining, setRemaining] = useState(0);
+  const [point, setPoint] = useState(0);
 
-  const bottomRef = useRef<HTMLDivElement | null>(null)
+  const [isTyping, setIsTyping] = useState(false);
 
-  const boyInfo = useMemo(()=>{
-    const map: Record<BoyId,{name:string,img:string}> = {
-      teo:{name:"テオ",img:"/boys/teo.png"},
-      rei:{name:"レイ",img:"/boys/rei.png"},
-      sora:{name:"そら",img:"/boys/sora.png"}
-    }
-    return map[boyId]
-  },[boyId])
+  const [showPay, setShowPay] = useState(false);
 
-  const roomId = `boy_${boyId}_${userId}`
+  const bottomRef =
+    useRef<HTMLDivElement | null>(null);
 
-  const subType = localStorage.getItem("hs_sub_type")
+  const boyInfo = useMemo(() => {
+
+    const map: Record<
+      BoyId,
+      {
+        name: string;
+        img: string;
+      }
+    > = {
+      teo: {
+        name: "テオ",
+        img: "/boys/teo.png"
+      },
+
+      rei: {
+        name: "レイ",
+        img: "/boys/rei.png"
+      },
+
+      sora: {
+        name: "そら",
+        img: "/boys/sora.png"
+      }
+    };
+
+    return map[boyId];
+
+  }, [boyId]);
+
+  const roomId =
+    `boy_${boyId}_${userId}`;
+
+  const subType =
+    localStorage.getItem("hs_sub_type");
 
   const unlimited =
     subType === "full" ||
     (subType === "night" && isNightTime()) ||
-    isDayPassActive()
+    isDayPassActive();
 
-  // 🔥 キャラ別課金セリフ
-  function getPayMessage(){
-    if(boyId === "teo"){
-      return "…もう少し話してく？ここで終わるの、ちょっと寂しい"
+  function getPayMessage() {
+
+    if (boyId === "teo") {
+      return "…もう少し話してく？ここで終わるの、ちょっと寂しい";
     }
-    if(boyId === "rei"){
-      return "…まだ話したいんやろ？ここで終わるのはもったいない"
+
+    if (boyId === "rei") {
+      return "…まだ話したいんやろ？ここで終わるのはもったいない";
     }
-    if(boyId === "sora"){
-      return "え、ここで終わるん？それ絶対続きあるやつやん笑"
+
+    if (boyId === "sora") {
+      return "え、ここで終わるん？それ絶対続きあるやつやん笑";
     }
-    return "続き、話したいね"
+
+    return "続き、話したいね";
   }
 
-  useEffect(()=>{
-    const r = loadTurnState()
-    setRemaining(r)
+  useEffect(() => {
 
-    if(!unlimited && r <= 0){
-      setShowPay(true)
+    const r = loadTurnState();
+
+    setRemaining(r);
+
+    if (!unlimited && r <= 0) {
+      setShowPay(true);
     }
 
-    async function loadPoint(){
-      const {data} = await supabase
+    async function loadPoint() {
+
+      const { data } = await supabase
         .from("users")
         .select("point")
-        .eq("id",userId)
-        .single()
+        .eq("id", userId)
+        .single();
 
-      if(data) setPoint(data.point || 0)
+      if (data) {
+        setPoint(data.point || 0);
+      }
     }
 
-    loadPoint()
-  },[])
+    loadPoint();
 
-  useEffect(()=>{
-    async function loadMessages(){
-      const {data} = await supabase
+  }, []);
+
+  useEffect(() => {
+
+    async function loadMessages() {
+
+      const { data, error } = await supabase
         .from("messages")
         .select("*")
-        .eq("room_id",roomId)
-        .order("created_at",{ascending:true})
+        .eq("room_id", roomId)
+        .order("created_at", {
+          ascending: true
+        });
 
-      if(data) setMessages(data as Message[])
+      console.log("🔥 load messages", data);
+      console.log("🔥 load error", error);
+
+      if (data) {
+        setMessages(data as Message[]);
+      }
     }
 
-    if(boyId) loadMessages()
-  },[boyId])
+    if (boyId) {
+      loadMessages();
+    }
 
-  useEffect(()=>{
-    bottomRef.current?.scrollIntoView({behavior:"smooth"})
-  },[messages,isTyping])
+  }, [boyId]);
 
-  async function typeAssistantMessage(full:string){
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth"
+    });
+  }, [messages, isTyping]);
 
-    setIsTyping(true)
+  async function typeAssistantMessage(full: string) {
 
-    const id=crypto.randomUUID()
+    setIsTyping(true);
 
-    setMessages(prev=>[...prev,{id,role:"assistant",content:""}])
+    const id = crypto.randomUUID();
 
-    for(let i=0;i<full.length;i++){
-      await sleep(TYPE_SPEED)
+    setMessages((prev) => [
+      ...prev,
+      {
+        id,
+        role: "assistant",
+        content: ""
+      }
+    ]);
 
-      setMessages(prev=>
-        prev.map(m=>
-          m.id===id ? {...m,content:full.slice(0,i+1)} : m
+    for (let i = 0; i < full.length; i++) {
+
+      await sleep(TYPE_SPEED);
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === id
+            ? {
+                ...m,
+                content: full.slice(0, i + 1)
+              }
+            : m
         )
-      )
+      );
     }
 
-    setIsTyping(false)
+    setIsTyping(false);
   }
 
-  async function sendMessage(){
+  async function sendMessage() {
 
-    const text=input.trim()
-    if(!text || isTyping) return
+    const text = input.trim();
 
-    const currentRemaining = loadTurnState()
+    if (!text || isTyping) return;
 
-    if(unlimited || currentRemaining > 0){
+    const currentRemaining =
+      loadTurnState();
 
-      if(!unlimited){
-        const next = currentRemaining - 1
-        saveRemaining(next)
-        setRemaining(next)
+    if (unlimited || currentRemaining > 0) {
 
-        if(next === 0){
-          setTimeout(()=>setShowPay(true),500)
+      if (!unlimited) {
+
+        const next =
+          currentRemaining - 1;
+
+        saveRemaining(next);
+
+        setRemaining(next);
+
+        if (next === 0) {
+
+          setTimeout(() => {
+            setShowPay(true);
+          }, 500);
         }
       }
 
-    }else{
-      setShowPay(true)
-      return
+    } else {
+
+      setShowPay(true);
+
+      return;
     }
 
-    setInput("")
+    setInput("");
 
-    const {data:userData} = await supabase
+    const {
+      data: userData,
+      error: userError
+    } = await supabase
       .from("messages")
-      .insert([{ room_id:roomId,user_id:userId,role:"user",content:text }])
+      .insert([
+        {
+          room_id: roomId,
+          user_id: userId,
+          role: "user",
+          content: text
+        }
+      ])
       .select()
-      .single()
+      .single();
 
-    if(!userData) return
+    console.log("🔥 user insert", userData);
+    console.log("🔥 user error", userError);
 
-    setMessages(prev=>[...prev,userData as Message])
+    if (userError) {
 
-    const aiText = await generateReply({
-      character: boyInfo?.name,
-      genre:"boy",
-      userMessage:text
-    })
+      alert(JSON.stringify(userError));
 
-    await typeAssistantMessage(aiText)
+      return;
+    }
 
-    await supabase.from("messages").insert([
-      { room_id:roomId,user_id:userId,role:"assistant",content:aiText }
-    ])
+    if (!userData) return;
+
+    setMessages((prev) => [
+      ...prev,
+      userData as Message
+    ]);
+
+    const aiText =
+      await generateReply({
+        character: boyInfo?.name,
+        genre: "boy",
+        userMessage: text
+      });
+
+    console.log("🔥 aiText", aiText);
+
+    await typeAssistantMessage(aiText);
+
+    const {
+      error: aiInsertError
+    } = await supabase
+      .from("messages")
+      .insert([
+        {
+          room_id: roomId,
+          user_id: userId,
+          role: "assistant",
+          content: aiText
+        }
+      ]);
+
+    console.log(
+      "🔥 ai insert error",
+      aiInsertError
+    );
   }
 
-  return(
+  return (
     <div className="chat-page">
 
       <div className="chat-header">
 
-        <button className="header-btn" onClick={()=>navigate("/select/boy")}>
+        <button
+          className="header-btn"
+          onClick={() =>
+            navigate("/select/boy")
+          }
+        >
           ◀︎
         </button>
 
         <div className="chat-title">
-          <img src={boyInfo?.img} className="header-avatar"/>
-          <span className="header-name">{boyInfo?.name}</span>
+
+          <img
+            src={boyInfo?.img}
+            className="header-avatar"
+          />
+
+          <span className="header-name">
+            {boyInfo?.name}
+          </span>
+
         </div>
 
         <div className="header-right">
+
           <span className="header-remaining">
-            {unlimited ? "残り ♾️" : `残り ${remaining}`} | {point}p
+
+            {unlimited
+              ? "残り ♾️"
+              : `残り ${remaining}`}
+
+            {" | "}
+
+            {point}p
+
           </span>
 
-          <button className="header-btn" onClick={()=>setMenuOpen(true)}>
+          <button
+            className="header-btn"
+            onClick={() =>
+              setMenuOpen(true)
+            }
+          >
             三
           </button>
+
         </div>
 
       </div>
 
       <div className="chat-list">
 
-        {messages.map(m=>
-          m.role==="assistant"
-          ?(
-            <div key={m.id} className="row ai">
-              <img src={boyInfo?.img} className="avatar"/>
-              <div className="bubble ai">{m.content}</div>
-            </div>
-          )
-          :(
-            <div key={m.id} className="row me">
-              <div className="bubble me">{m.content}</div>
-            </div>
-          )
+        {messages.map((m) =>
+
+          m.role === "assistant"
+
+            ? (
+              <div
+                key={m.id}
+                className="row ai"
+              >
+
+                <img
+                  src={boyInfo?.img}
+                  className="avatar"
+                />
+
+                <div className="bubble ai">
+                  {m.content}
+                </div>
+
+              </div>
+            )
+
+            : (
+              <div
+                key={m.id}
+                className="row me"
+              >
+
+                <div className="bubble me">
+                  {m.content}
+                </div>
+
+              </div>
+            )
         )}
 
-        {/* 🔥 課金ブロック */}
         {showPay && (
+
           <div className="pay-box">
-            <div className="pay-text">{getPayMessage()}</div>
+
+            <div className="pay-text">
+              {getPayMessage()}
+            </div>
+
             <button
               className="pay-btn"
-              onClick={()=>navigate("/purchase")}
+              onClick={() =>
+                navigate("/purchase")
+              }
             >
               続きを話す（5p〜）
             </button>
+
           </div>
         )}
 
-        <div ref={bottomRef}/>
+        <div ref={bottomRef} />
 
       </div>
 
@@ -293,18 +474,31 @@ export default function BoyChat(){
         <input
           className="chat-input"
           value={input}
-          onChange={(e)=>setInput(e.target.value)}
-          onKeyDown={(e)=>e.key==="Enter" && sendMessage()}
+          onChange={(e) =>
+            setInput(e.target.value)
+          }
+          onKeyDown={(e) =>
+            e.key === "Enter" &&
+            sendMessage()
+          }
         />
 
-        <button className="chat-send" onClick={sendMessage}>
+        <button
+          className="chat-send"
+          onClick={sendMessage}
+        >
           送信
         </button>
 
       </div>
 
-      <MenuModal open={menuOpen} onClose={()=>setMenuOpen(false)}/>
+      <MenuModal
+        open={menuOpen}
+        onClose={() =>
+          setMenuOpen(false)
+        }
+      />
 
     </div>
-  )
+  );
 }

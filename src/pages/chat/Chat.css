@@ -1,30 +1,37 @@
 /* ===== 全体 ===== */
 .chat-page {
-  max-width: 420px;
+  width: 100%;
+  max-width: 430px;
   margin: 0 auto;
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: #f5f7fb;
+  position: relative;
+  overflow: hidden;
 }
 
 /* ===== HEADER ===== */
 .chat-header {
-  height: 56px;
+  height: 54px;
+  min-height: 54px;
   background: #6f7cff;
   color: #fff;
   display: flex;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 10px;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .header-btn {
   background: none;
   border: none;
   color: #fff;
-  font-size: 18px;
+  font-size: 17px;
   cursor: pointer;
-  padding: 6px 8px;
+  padding: 6px;
+  flex-shrink: 0;
 }
 
 .chat-title {
@@ -33,11 +40,12 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  min-width: 0;
 }
 
 .header-avatar {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -45,23 +53,48 @@
 
 .header-name {
   font-weight: 600;
+  font-size: 14px;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .header-remaining {
-  font-size: 12px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* ===== FREE NAME ===== */
+
+.free-name-input {
+  flex: 1;
+  height: 34px;
+  border: none;
+  border-radius: 12px;
+  padding: 0 12px;
+  margin: 0 10px;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  outline: none;
+  font-size: 13px;
+}
+
+.free-name-input::placeholder {
+  color: rgba(255,255,255,0.75);
 }
 
 /* ===== CHAT BODY ===== */
 .chat-list {
   flex: 1;
-  padding: 12px;
   overflow-y: auto;
+  min-height: 0;
+  padding: 14px 10px 18px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 .row {
@@ -79,60 +112,83 @@
 }
 
 .avatar {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 }
 
 .bubble {
-  border-radius: 14px;
-  padding: 8px 12px;
-  max-width: 70%;
+  border-radius: 18px;
+  padding: 10px 13px;
+  max-width: 78%;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.75;
   white-space: pre-wrap;
   word-break: break-word;
+  box-sizing: border-box;
 }
 
 .bubble.ai {
   background: #ffffff;
   color: #111827;
+  border-bottom-left-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 .bubble.me {
   background: #6f7cff;
   color: #ffffff;
+  border-bottom-right-radius: 6px;
 }
 
 /* ===== FOOTER ===== */
 .chat-footer {
   display: flex;
-  padding: 8px;
+  align-items: center;
   gap: 6px;
-  background: #fff;
+  padding:
+    8px
+    8px
+    calc(env(safe-area-inset-bottom) + 8px);
+  background: rgba(255,255,255,0.96);
   border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 999;
+  backdrop-filter: blur(8px);
+  box-sizing: border-box;
 }
 
 .chat-input {
   flex: 1;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+  height: 42px;
+  border-radius: 16px;
+  border: 1px solid #dbe3f0;
   background: #eef3ff;
+  padding: 0 14px;
   outline: none;
+  font-size: 14px;
+  color: #111827;
+  box-sizing: border-box;
+}
+
+.chat-input::placeholder {
+  color: #6b7280;
 }
 
 .chat-send {
-  width: 70px;
-  height: 40px;
-  border: 1px solid #d1d5db;
-  border-radius: 12px;
-  background: #ffffff;
-  color: #111827;
-  font-weight: 600;
+  width: 64px;
+  height: 42px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6f7cff, #4da3ff);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .chat-send:active {
@@ -148,31 +204,31 @@
 .chat-list img {
   max-width: 60px;
   height: auto;
+  border-radius: 10px;
 }
 
-/* ===== 🔥課金UI（ここが今回の修正） ===== */
-
+/* ===== 課金UI ===== */
 .pay-box {
   margin: 14px 0;
   padding: 14px;
   background: #ffffff;
-  border-radius: 14px;
+  border-radius: 16px;
   text-align: center;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.25s ease;
 }
 
 .pay-text {
   font-size: 13px;
   color: #374151;
   margin-bottom: 10px;
-  line-height: 1.4;
+  line-height: 1.7;
 }
 
-/* ボタン */
 .pay-btn {
   width: 100%;
   height: 44px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: none;
   background: linear-gradient(135deg, #6f7cff, #4da3ff);
   color: #ffffff;
@@ -181,14 +237,8 @@
   cursor: pointer;
 }
 
-/* 押したとき */
 .pay-btn:active {
   transform: translateY(1px);
-}
-
-/* アニメーション（自然に出す） */
-.pay-box {
-  animation: fadeInUp 0.25s ease;
 }
 
 @keyframes fadeInUp {
@@ -196,6 +246,7 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

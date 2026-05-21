@@ -15,7 +15,11 @@ export default function PointsAbout() {
         localStorage.setItem("user_id", user_id);
       }
 
-      const res = await fetch("/api/pay", {
+      const API_BASE =
+        (import.meta.env.VITE_API_BASE_URL as string | undefined)
+        || "http://localhost:3000";
+
+      const res = await fetch(`${API_BASE}/pay`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -38,6 +42,9 @@ export default function PointsAbout() {
       navigate(-1);
 
     } catch (e) {
+
+      console.log(e);
+
       alert("通信エラー");
     }
 

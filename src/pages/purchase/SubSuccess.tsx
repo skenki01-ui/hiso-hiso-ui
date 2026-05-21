@@ -1,55 +1,85 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function SubSuccess() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-
-    const params = new URLSearchParams(window.location.search);
-    const type = params.get("type");
-
-    if (type === "midnight") {
-      localStorage.setItem("sub_midnight", "true");
-    }
-
-    if (type === "full") {
-      localStorage.setItem("sub_full", "true");
-    }
-
-  }, []);
-
   return (
+
     <div
       style={{
         minHeight: "100vh",
+        background: "#eaf3ff",
         display: "flex",
-        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        gap: 20
+        padding: 20
       }}
     >
 
-      <h2>サブスク購入ありがとうございます</h2>
-
-      <button
-        onClick={() => navigate("/select/boy")}
+      <div
         style={{
-          padding: "12px 20px",
-          fontSize: 16,
-          borderRadius: 8,
-          border: "none",
-          background: "#222",
-          color: "#fff",
-          cursor: "pointer"
+          width: "100%",
+          maxWidth: 420,
+          background: "#ffffff",
+          borderRadius: 16,
+          padding: 28,
+          textAlign: "center",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.08)"
         }}
       >
-        チャットに戻る
-      </button>
+
+        <div
+          style={{
+            fontSize: 48,
+            marginBottom: 10
+          }}
+        >
+          🌙
+        </div>
+
+        <h2
+          style={{
+            marginTop: 0,
+            marginBottom: 14
+          }}
+        >
+          ご登録ありがとうございます
+        </h2>
+
+        <p
+          style={{
+            lineHeight: 1.8,
+            fontSize: 14,
+            color: "#555",
+            marginBottom: 24
+          }}
+        >
+          サブスクリプションの登録が完了しました。
+          <br />
+          これからも、ひそひそで
+          ゆっくりお話しできます。
+        </p>
+
+        <button
+          onClick={() => navigate("/register")}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: 10,
+            border: "none",
+            background: "#4da3ff",
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: 15,
+            cursor: "pointer"
+          }}
+        >
+          ひそひそへ戻る
+        </button>
+
+      </div>
 
     </div>
   );
-
 }

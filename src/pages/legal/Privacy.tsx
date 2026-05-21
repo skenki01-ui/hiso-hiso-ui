@@ -33,7 +33,7 @@ export default function Privacy() {
       <h2>プライバシーポリシー</h2>
 
       <p>
-        ひそひそ運営事務局（以下、「当事業者」といいます。）は、
+        GearDock Lab（以下、「当事業者」といいます。）は、
         本サービスにおけるユーザーの個人情報の取り扱いについて、
         以下のとおりプライバシーポリシーを定めます。
       </p>
@@ -74,7 +74,7 @@ export default function Privacy() {
 
       <p>
         <b>■お問い合わせ</b><br/>
-        メール：s_kenki@yahoo.co.jp
+        メール：kunanahachi@gmail.com
       </p>
 
       <p>

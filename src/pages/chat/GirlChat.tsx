@@ -16,294 +16,464 @@ type GirlId = "mio" | "akina" | "niko";
 
 const TYPE_SPEED = 140;
 
-function sleep(ms:number){
-  return new Promise(res=>setTimeout(res,ms))
+function sleep(ms: number) {
+  return new Promise((res) => setTimeout(res, ms));
 }
 
-function isNightTime(){
-  const h = new Date().getHours()
-  return h >= 20 || h < 5
+function isNightTime() {
+  const h = new Date().getHours();
+  return h >= 20 || h < 5;
 }
 
-function getTurnAllowance(){
-  return isNightTime() ? 6 : 3
+function getTurnAllowance() {
+  return isNightTime() ? 6 : 3;
 }
 
-function getWindowStart(){
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = d.getMonth()
-  const day = d.getDate()
-  const h = d.getHours()
+function getWindowStart() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = d.getMonth();
+  const day = d.getDate();
+  const h = d.getHours();
 
-  if(h >= 20) return new Date(y,m,day,20).getTime()
-  if(h < 5) return new Date(y,m,day-1,20).getTime()
-
-  return new Date(y,m,day,5).getTime()
-}
-
-function loadTurnState(){
-  const allowance = getTurnAllowance()
-  const start = getWindowStart()
-
-  const savedStart = Number(localStorage.getItem("hs_turn_window_start") || "0")
-  const savedRemaining = Number(localStorage.getItem("hs_turn_remaining") || allowance)
-
-  if(savedStart !== start){
-    localStorage.setItem("hs_turn_window_start",String(start))
-    localStorage.setItem("hs_turn_remaining",String(allowance))
-    return allowance
+  if (h >= 20) {
+    return new Date(y, m, day, 20).getTime();
   }
 
-  return savedRemaining
+  if (h < 5) {
+    return new Date(y, m, day - 1, 20).getTime();
+  }
+
+  return new Date(y, m, day, 5).getTime();
 }
 
-function saveRemaining(n:number){
-  localStorage.setItem("hs_turn_remaining",String(n))
+function loadTurnState() {
+  const allowance = getTurnAllowance();
+  const start = getWindowStart();
+
+  const savedStart = Number(
+    localStorage.getItem("hs_turn_window_start") || "0"
+  );
+
+  const savedRemaining = Number(
+    localStorage.getItem("hs_turn_remaining") || allowance
+  );
+
+  if (savedStart !== start) {
+
+    localStorage.setItem(
+      "hs_turn_window_start",
+      String(start)
+    );
+
+    localStorage.setItem(
+      "hs_turn_remaining",
+      String(allowance)
+    );
+
+    return allowance;
+  }
+
+  return savedRemaining;
 }
 
-function getNextRecoveryText(){
-  return isNightTime() ? "次の回復は 5:00 です" : "次の回復は 20:00 です"
+function saveRemaining(n: number) {
+  localStorage.setItem(
+    "hs_turn_remaining",
+    String(n)
+  );
 }
 
-export default function GirlChat(){
+export default function GirlChat() {
 
-  const navigate = useNavigate()
-  const { id } = useParams()
-  const girlId = (id || "") as GirlId
+  const navigate = useNavigate();
 
-  const userId = localStorage.getItem("user_id") || "guest"
+  const { id } = useParams();
 
-  const [messages,setMessages] = useState<Message[]>([])
-  const [input,setInput] = useState("")
-  const [menuOpen,setMenuOpen] = useState(false)
+  const girlId = (id || "") as GirlId;
 
-  const [remaining,setRemaining] = useState(0)
-  const [point,setPoint] = useState(0)
-  const [isTyping,setIsTyping] = useState(false)
+  const userId =
+    localStorage.getItem("user_id") || "guest";
 
-  // 🔥 追加
-  const [showPay,setShowPay] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const bottomRef = useRef<HTMLDivElement | null>(null)
+  const [remaining, setRemaining] = useState(0);
+  const [point, setPoint] = useState(0);
 
-  const girlInfo = useMemo(()=>{
-    const map: Record<GirlId,{name:string,img:string}> = {
-      mio:{name:"みお",img:"/girls/mio.png"},
-      akina:{name:"あきな",img:"/girls/akina.png"},
-      niko:{name:"にこ",img:"/girls/niko.png"}
-    }
-    return map[girlId]
-  },[girlId])
+  const [isTyping, setIsTyping] = useState(false);
 
-  const roomId = `girl_${girlId}_${userId}`
+  const [showPay, setShowPay] = useState(false);
 
-  const subType = localStorage.getItem("hs_sub_type")
+  const bottomRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const girlInfo = useMemo(() => {
+
+    const map: Record<
+      GirlId,
+      {
+        name: string;
+        img: string;
+      }
+    > = {
+      mio: {
+        name: "みお",
+        img: "/girls/mio.png"
+      },
+
+      akina: {
+        name: "あきな",
+        img: "/girls/akina.png"
+      },
+
+      niko: {
+        name: "にこ",
+        img: "/girls/niko.png"
+      }
+    };
+
+    return map[girlId];
+
+  }, [girlId]);
+
+  const roomId =
+    `girl_${girlId}_${userId}`;
+
+  const subType =
+    localStorage.getItem("hs_sub_type");
 
   const unlimited =
     subType === "full" ||
     (subType === "night" && isNightTime()) ||
-    isDayPassActive()
+    isDayPassActive();
 
-  // 🔥 キャラ別課金セリフ
-  function getPayMessage(){
-    if(girlId === "mio"){
-      return "…まだ、少しだけ話してく？"
+  function getPayMessage() {
+
+    if (girlId === "mio") {
+      return "…まだ、少しだけ話してく？";
     }
-    if(girlId === "akina"){
-      return "ここで終わるの、もったいないよ"
+
+    if (girlId === "akina") {
+      return "ここで終わるの、もったいないよ";
     }
-    if(girlId === "niko"){
-      return "えーまだしゃべりたいのに笑"
+
+    if (girlId === "niko") {
+      return "えーまだしゃべりたいのに笑";
     }
-    return "続き、話す？"
+
+    return "続き、話す？";
   }
 
-  useEffect(()=>{
-    const r = loadTurnState()
-    setRemaining(r)
+  useEffect(() => {
 
-    if(!unlimited && r <= 0){
-      setShowPay(true)
+    const r = loadTurnState();
+
+    setRemaining(r);
+
+    if (!unlimited && r <= 0) {
+      setShowPay(true);
     }
 
-    async function loadPoint(){
-      const {data} = await supabase
+    async function loadPoint() {
+
+      const { data } = await supabase
         .from("users")
         .select("point")
-        .eq("id",userId)
-        .single()
+        .eq("id", userId)
+        .single();
 
-      if(data){
-        setPoint(data.point || 0)
+      if (data) {
+        setPoint(data.point || 0);
       }
     }
 
-    loadPoint()
+    loadPoint();
 
-  },[])
+  }, []);
 
-  useEffect(()=>{
-    async function loadMessages(){
-      const {data} = await supabase
+  useEffect(() => {
+
+    async function loadMessages() {
+
+      const { data, error } = await supabase
         .from("messages")
         .select("*")
-        .eq("room_id",roomId)
-        .order("created_at",{ascending:true})
+        .eq("room_id", roomId)
+        .order("created_at", {
+          ascending: true
+        });
 
-      if(data) setMessages(data as Message[])
+      console.log("🔥 girl load", data);
+      console.log("🔥 girl load error", error);
+
+      if (data) {
+        setMessages(data as Message[]);
+      }
     }
 
-    if(girlId) loadMessages()
-  },[girlId])
+    if (girlId) {
+      loadMessages();
+    }
 
-  useEffect(()=>{
-    bottomRef.current?.scrollIntoView({behavior:"smooth"})
-  },[messages,isTyping])
+  }, [girlId]);
 
-  async function typeAssistantMessage(full:string){
+  useEffect(() => {
 
-    setIsTyping(true)
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth"
+    });
 
-    const id=crypto.randomUUID()
+  }, [messages, isTyping]);
 
-    setMessages(prev=>[
+  async function typeAssistantMessage(full: string) {
+
+    setIsTyping(true);
+
+    const id = crypto.randomUUID();
+
+    setMessages((prev) => [
       ...prev,
-      {id,role:"assistant",content:""}
-    ])
+      {
+        id,
+        role: "assistant",
+        content: ""
+      }
+    ]);
 
-    for(let i=0;i<full.length;i++){
-      await sleep(TYPE_SPEED)
+    for (let i = 0; i < full.length; i++) {
 
-      setMessages(prev=>
-        prev.map(m=>
-          m.id===id
-          ? {...m,content:full.slice(0,i+1)}
-          : m
+      await sleep(TYPE_SPEED);
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === id
+            ? {
+                ...m,
+                content: full.slice(0, i + 1)
+              }
+            : m
         )
-      )
+      );
     }
 
-    setIsTyping(false)
+    setIsTyping(false);
   }
 
-  async function sendMessage(){
+  async function sendMessage() {
 
-    const text=input.trim()
-    if(!text || isTyping) return
+    const text = input.trim();
 
-    const currentRemaining = loadTurnState()
+    if (!text || isTyping) return;
 
-    if(unlimited || currentRemaining > 0){
+    const currentRemaining =
+      loadTurnState();
 
-      if(!unlimited){
-        const next = currentRemaining - 1
-        saveRemaining(next)
-        setRemaining(next)
+    if (unlimited || currentRemaining > 0) {
 
-        if(next === 0){
-          setTimeout(()=>setShowPay(true),500)
+      if (!unlimited) {
+
+        const next =
+          currentRemaining - 1;
+
+        saveRemaining(next);
+
+        setRemaining(next);
+
+        if (next === 0) {
+
+          setTimeout(() => {
+            setShowPay(true);
+          }, 500);
         }
       }
 
-    }else{
-      setShowPay(true)
-      return
+    } else {
+
+      setShowPay(true);
+
+      return;
     }
 
-    setInput("")
+    setInput("");
 
-    const {data:userData} = await supabase
+    const {
+      data: userData,
+      error: userError
+    } = await supabase
       .from("messages")
-      .insert([{
-        room_id:roomId,
-        user_id:userId,
-        role:"user",
-        content:text
-      }])
+      .insert([
+        {
+          room_id: roomId,
+          user_id: userId,
+          role: "user",
+          content: text
+        }
+      ])
       .select()
-      .single()
+      .single();
 
-    if(!userData) return
+    console.log("🔥 girl user insert", userData);
+    console.log("🔥 girl user error", userError);
 
-    setMessages(prev=>[
+    if (userError) {
+
+      alert(JSON.stringify(userError));
+
+      return;
+    }
+
+    if (!userData) return;
+
+    setMessages((prev) => [
       ...prev,
       userData as Message
-    ])
+    ]);
 
-    const aiText = await generateReply({
-      character: girlInfo?.name,
-      genre:"girl",
-      userMessage:text
-    })
+    const aiText =
+      await generateReply({
+        character: girlInfo?.name,
+        genre: "girl",
+        userMessage: text
+      });
 
-    await typeAssistantMessage(aiText)
+    console.log("🔥 girl aiText", aiText);
 
-    await supabase.from("messages").insert([{
-      room_id:roomId,
-      user_id:userId,
-      role:"assistant",
-      content:aiText
-    }])
+    await typeAssistantMessage(aiText);
+
+    const {
+      error: aiInsertError
+    } = await supabase
+      .from("messages")
+      .insert([
+        {
+          room_id: roomId,
+          user_id: userId,
+          role: "assistant",
+          content: aiText
+        }
+      ]);
+
+    console.log(
+      "🔥 girl ai insert error",
+      aiInsertError
+    );
   }
 
-  return(
+  return (
     <div className="chat-page">
 
       <div className="chat-header">
 
-        <button className="header-btn" onClick={()=>navigate("/select/girl")}>
+        <button
+          className="header-btn"
+          onClick={() =>
+            navigate("/select/girl")
+          }
+        >
           ◀︎
         </button>
 
         <div className="chat-title">
-          <img src={girlInfo?.img} className="header-avatar"/>
-          <span className="header-name">{girlInfo?.name}</span>
+
+          <img
+            src={girlInfo?.img}
+            className="header-avatar"
+          />
+
+          <span className="header-name">
+            {girlInfo?.name}
+          </span>
+
         </div>
 
         <div className="header-right">
+
           <span className="header-remaining">
-            {unlimited ? "残り ♾️" : `残り ${remaining}`} | {point}p
+
+            {unlimited
+              ? "残り ♾️"
+              : `残り ${remaining}`}
+
+            {" | "}
+
+            {point}p
+
           </span>
 
-          <button className="header-btn" onClick={()=>setMenuOpen(true)}>
+          <button
+            className="header-btn"
+            onClick={() =>
+              setMenuOpen(true)
+            }
+          >
             三
           </button>
+
         </div>
 
       </div>
 
       <div className="chat-list">
 
-        {messages.map(m=>
-          m.role==="assistant"
-          ?(
-            <div key={m.id} className="row ai">
-              <img src={girlInfo?.img} className="avatar"/>
-              <div className="bubble ai">{m.content}</div>
-            </div>
-          )
-          :(
-            <div key={m.id} className="row me">
-              <div className="bubble me">{m.content}</div>
-            </div>
-          )
+        {messages.map((m) =>
+
+          m.role === "assistant"
+
+            ? (
+              <div
+                key={m.id}
+                className="row ai"
+              >
+
+                <img
+                  src={girlInfo?.img}
+                  className="avatar"
+                />
+
+                <div className="bubble ai">
+                  {m.content}
+                </div>
+
+              </div>
+            )
+
+            : (
+              <div
+                key={m.id}
+                className="row me"
+              >
+
+                <div className="bubble me">
+                  {m.content}
+                </div>
+
+              </div>
+            )
         )}
 
-        {/* 🔥 課金導線 */}
         {showPay && (
+
           <div className="pay-box">
-            <div className="pay-text">{getPayMessage()}</div>
+
+            <div className="pay-text">
+              {getPayMessage()}
+            </div>
+
             <button
               className="pay-btn"
-              onClick={()=>navigate("/purchase")}
+              onClick={() =>
+                navigate("/purchase")
+              }
             >
               続きを話す（5p〜）
             </button>
+
           </div>
         )}
 
-        <div ref={bottomRef}/>
+        <div ref={bottomRef} />
 
       </div>
 
@@ -313,8 +483,13 @@ export default function GirlChat(){
           className="chat-input"
           value={input}
           placeholder="メッセージを入力"
-          onChange={(e)=>setInput(e.target.value)}
-          onKeyDown={(e)=>e.key==="Enter" && sendMessage()}
+          onChange={(e) =>
+            setInput(e.target.value)
+          }
+          onKeyDown={(e) =>
+            e.key === "Enter" &&
+            sendMessage()
+          }
         />
 
         <button
@@ -326,8 +501,13 @@ export default function GirlChat(){
 
       </div>
 
-      <MenuModal open={menuOpen} onClose={()=>setMenuOpen(false)}/>
+      <MenuModal
+        open={menuOpen}
+        onClose={() =>
+          setMenuOpen(false)
+        }
+      />
 
     </div>
-  )
+  );
 }

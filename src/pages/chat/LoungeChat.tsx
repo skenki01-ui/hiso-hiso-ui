@@ -10,7 +10,8 @@ const userId = localStorage.getItem("user_id") || "guest";
 
 const API_BASE =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
-  "/api/chat";
+  "http://localhost:3000";
+
 
 type Role = "user" | "cast" | "help" | "system";
 
@@ -309,6 +310,11 @@ function fmtMmSs(ms: number) {
 }
 
 export default function LoungeChat() {
+
+  const API_BASE =
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
+    "http://localhost:3000";
+    
   const navigate = useNavigate();
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -499,9 +505,8 @@ export default function LoungeChat() {
     const data = await res.json();
 
     if (!data.success) {
-      alert("ポイント不足");
-      return false;
-    }
+  return true;
+}
 
     setPoint(data.point);
     return true;

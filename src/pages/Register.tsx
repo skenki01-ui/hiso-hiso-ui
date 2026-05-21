@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AskLaterModal from "./components/modal/Question";
 import ShareBox from "../components/ShareBox";
@@ -12,13 +12,14 @@ export default function Register() {
   const [name, setName] = useState("");
   const [askOpen, setAskOpen] = useState(false);
 
-  // 🔥 追加
+  // 🔥 同意チェック
   const [agree, setAgree] = useState(false);
   const [adult, setAdult] = useState(false);
 
   useEffect(() => {
 
     const saved = localStorage.getItem("nickname");
+
     if (saved) {
       setName(saved);
     }
@@ -28,9 +29,11 @@ export default function Register() {
   }, []);
 
   async function initUserSafe() {
+
     try {
 
-      const nickname = (localStorage.getItem("nickname") || "").trim();
+      const nickname =
+        (localStorage.getItem("nickname") || "").trim();
 
       const userId = await ensureUser(nickname);
 
@@ -41,13 +44,15 @@ export default function Register() {
       await loadPoint();
 
     } catch (e) {
+
       console.error("initUser error:", e);
+
     }
+
   }
 
   async function go(path: string) {
 
-    // 🔥 チェック追加
     if (!agree) {
       alert("利用規約に同意してください");
       return;
@@ -73,10 +78,13 @@ export default function Register() {
       }
 
     } catch (e) {
+
       console.error("go error:", e);
+
     }
 
     navigate(path);
+
   }
 
   return (
@@ -92,99 +100,213 @@ export default function Register() {
           paddingBottom: 24,
         }}
       >
-        <div style={{ width: "100%", maxWidth: 420, padding: 16 }}>
 
-          <h1 style={{ margin: 0, textAlign: "center", fontSize: 28 }}>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 420,
+            padding: 16
+          }}
+        >
+
+          <h1
+            style={{
+              margin: 0,
+              textAlign: "center",
+              fontSize: 28,
+              fontWeight: 800,
+            }}
+          >
             💬ひそひそ
           </h1>
 
-          <p style={{ textAlign: "center", fontSize: 14 }}>
-            AIキャラクターと会話を楽しめるチャットサービスです。
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: 14,
+              lineHeight: 1.6,
+              marginTop: 12,
+              marginBottom: 20,
+            }}
+          >
+            AIキャラクターと会話を楽しめる
+            <br />
+            チャットサービスです。
           </p>
 
           <div
             style={{
               fontSize: 12,
-              marginTop: 10,
-              marginBottom: 16,
-              background: "#fff",
-              padding: 10,
-              borderRadius: 8,
-              lineHeight: 1.6
+              marginBottom: 18,
+              background: "#ffffff",
+              padding: 14,
+              borderRadius: 14,
+              lineHeight: 1.8,
+              boxShadow: "0 2px 10px rgba(0,0,0,0.04)"
             }}
           >
             ポイントについて：
             <br />
-            ・1ターン＝5ポイント<br />
-            ・1ポイント＝10円<br />
-            ・1DAYパス＝80ポイント<br />
+            ・1ターン＝5ポイント
+            <br />
+            ・1ポイント＝10円
+            <br />
+            ・1DAYパス＝80ポイント
+            <br />
             ・サブスクあり（1200円 / 1900円）
           </div>
 
-          <div style={{ fontSize: 12, marginBottom: 4 }}>
-            未記入OK
+          <div
+            style={{
+              fontSize: 12,
+              marginBottom: 6,
+              color: "#666"
+            }}
+          >
+            ニックネーム（未入力OK）
           </div>
 
           <input
             placeholder="なんて呼んだらいい？"
             value={name}
             onChange={(e) => {
+
               setName(e.target.value);
-              localStorage.setItem("nickname", e.target.value);
+
+              localStorage.setItem(
+                "nickname",
+                e.target.value
+              );
+
             }}
             style={{
               width: "100%",
-              height: 36,
-              padding: "6px 10px",
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              background: "#f5f8ff",
-              marginBottom: 16,
+              height: 48,
+              padding: "0 14px",
+              borderRadius: 12,
+              border: "1px solid #d7deea",
+              background: "#ffffff",
+              fontSize: 16,
+              outline: "none",
+              marginBottom: 18,
+              boxSizing: "border-box"
             }}
           />
 
-          {/* 🔥 同意チェック */}
-          <div style={{ fontSize: 12, marginBottom: 10 }}>
-            <label>
+          {/* 利用規約 */}
+          <div
+            style={{
+              fontSize: 13,
+              marginBottom: 12,
+              lineHeight: 1.6,
+            }}
+          >
+
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                cursor: "pointer"
+              }}
+            >
+
               <input
                 type="checkbox"
                 checked={agree}
-                onChange={(e) => setAgree(e.target.checked)}
-              />{" "}
-              <a href="/terms">利用規約</a> に同意する
+                onChange={(e) =>
+                  setAgree(e.target.checked)
+                }
+              />
+
+              <span>
+
+                <Link to="/terms">
+                  利用規約
+                </Link>
+
+                {" "}に同意する
+
+              </span>
+
             </label>
+
           </div>
 
-          <div style={{ fontSize: 12, marginBottom: 16 }}>
-            <label>
+          {/* 年齢 */}
+          <div
+            style={{
+              fontSize: 13,
+              marginBottom: 22,
+              lineHeight: 1.6,
+            }}
+          >
+
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                cursor: "pointer"
+              }}
+            >
+
               <input
                 type="checkbox"
                 checked={adult}
-                onChange={(e) => setAdult(e.target.checked)}
-              />{" "}
-              18歳以上です
+                onChange={(e) =>
+                  setAdult(e.target.checked)
+                }
+              />
+
+              <span>
+                18歳以上です(18未満は保護者同意が必要です）
+              </span>
+
             </label>
+
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 12
+            }}
+          >
 
-            <button style={panelStyle} onClick={() => go("/select/free")}>
+            <button
+              style={panelStyle}
+              onClick={() => go("/select/free")}
+            >
               自由におしゃべり
             </button>
 
-            <button style={panelStyle} onClick={() => go("/select/boy")}>
+            <button
+              style={panelStyle}
+              onClick={() => go("/select/boy")}
+            >
               男の子としゃべる
             </button>
 
-            <button style={panelStyle} onClick={() => go("/select/girl")}>
+            <button
+              style={panelStyle}
+              onClick={() => go("/select/girl")}
+            >
               女の子としゃべる
             </button>
 
-            <button style={panelStyle} onClick={() => go("/lounge")}>
-              🌙ミッドナイトラウンジへ
+            <button
+              style={panelStyle}
+              onClick={() => go("/lounge")}
+            >
+              🌙BARに入る
             </button>
 
-            <button style={panelStyle} onClick={() => setAskOpen(true)}>
+            <button
+              style={panelStyle}
+              onClick={() => setAskOpen(true)}
+            >
               そのうち教えて
             </button>
 
@@ -192,36 +314,66 @@ export default function Register() {
 
           <ShareBox />
 
+          {/* 法律リンク */}
           <div
             style={{
               marginTop: 40,
               textAlign: "center",
               fontSize: 12,
               color: "#666",
-              lineHeight: 1.8,
+              lineHeight: 2,
             }}
           >
-            <a href="/terms">利用規約</a> ｜{" "}
-            <a href="/privacy">プライバシーポリシー</a> ｜{" "}
-            <a href="/tokushoho">特定商取引法</a> ｜{" "}
-            <a href="/contact">お問い合わせ</a>
+
+            <Link to="/terms">
+              利用規約
+            </Link>
+
+            {" ｜ "}
+
+            <Link to="/privacy">
+              プライバシーポリシー
+            </Link>
+
+            {" ｜ "}
+
+            <Link to="/tokushoho">
+              特定商取引法
+            </Link>
+
+            {" ｜ "}
+
+            <Link to="/contact">
+              お問い合わせ
+            </Link>
+
           </div>
 
         </div>
+
       </div>
 
-      <AskLaterModal open={askOpen} onClose={() => setAskOpen(false)} />
+      <AskLaterModal
+        open={askOpen}
+        onClose={() => setAskOpen(false)}
+      />
 
     </>
   );
+
 }
 
 const panelStyle: React.CSSProperties = {
+
   background: "#ffffff",
-  borderRadius: 10,
-  padding: 14,
+  borderRadius: 18,
+  padding: 18,
   textAlign: "center",
-  fontSize: 16,
+  fontSize: 18,
+  fontWeight: 700,
   border: "none",
   cursor: "pointer",
+  color: "#1d4ed8",
+  boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
+
 };

@@ -16,7 +16,11 @@ export default function Pay() {
 
     try {
 
-      const res = await fetch("/api/pay", {
+      const API_BASE =
+(import.meta.env.VITE_API_BASE_URL as string | undefined)
+|| "http://localhost:3000";
+
+      const res = await fetch(`${API_BASE}/api/pay`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

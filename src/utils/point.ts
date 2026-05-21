@@ -23,7 +23,11 @@ export const usePoint = async (p: number) => {
 
     const userId = localStorage.getItem("user_id") || "guest";
 
-    const res = await fetch("/api/use-point", {
+    const API_BASE =
+(import.meta.env.VITE_API_BASE_URL as string | undefined)
+|| "http://localhost:3000";
+
+const res = await fetch(`${API_BASE}/api/use-point`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

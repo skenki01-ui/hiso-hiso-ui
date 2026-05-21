@@ -18,9 +18,9 @@ const GENRES: Genre[] = [
 ];
 
 const MODES = [
+  "普通にせっして",
   "とことん甘やかして",
   "褒めちぎって",
-  "普通にせっして",
   "元気にさせて",
   "ポジティブに返して",
   "厳しくして",
@@ -30,7 +30,10 @@ export default function FreeSelect() {
   const navigate = useNavigate();
 
   const [genre, setGenre] = useState(GENRES[0].title);
-  const [mode, setMode] = useState(MODES[0]);
+
+  // 🔥 デフォルトを「普通にせっして」に変更
+  const [mode, setMode] = useState("普通にせっして");
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   const query = useMemo(() => {
@@ -53,6 +56,7 @@ export default function FreeSelect() {
 
       <section className="free-select-section">
         <div className="section-title">ジャンル</div>
+
         <div className="genre-grid">
           {GENRES.map((g) => (
             <button
@@ -69,6 +73,7 @@ export default function FreeSelect() {
 
       <section className="free-select-section">
         <div className="section-title">モード</div>
+
         <div className="mode-grid">
           {MODES.map((m) => (
             <button

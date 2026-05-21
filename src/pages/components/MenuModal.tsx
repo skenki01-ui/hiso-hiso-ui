@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { startFullSub, startMidnightSub, cancelSub } from "../../utils/subscription";
+import { cancelSub } from "../../utils/subscription";
 
 type Props = {
   open: boolean;
@@ -21,7 +21,11 @@ export default function MenuModal({ open, onClose }: Props) {
 
     const userId = localStorage.getItem("user_id") || "guest";
 
-    const res = await fetch("/api/use-point", {
+    const API_BASE =
+      (import.meta.env.VITE_API_BASE_URL as string | undefined)
+      || "http://localhost:3000";
+
+    const res = await fetch(`${API_BASE}/api/use-point`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -40,7 +44,11 @@ export default function MenuModal({ open, onClose }: Props) {
     }
 
     const until = Date.now() + 24 * 60 * 60 * 1000;
-    localStorage.setItem("hs_day_pass_until", String(until));
+
+    localStorage.setItem(
+      "hs_day_pass_until",
+      String(until)
+    );
 
     alert("1DAYパス購入しました");
 
@@ -48,24 +56,28 @@ export default function MenuModal({ open, onClose }: Props) {
   }
 
   function buyMidnightSub() {
-    startMidnightSub();
-    alert("夜サブスク開始（20:00〜5:00無制限）");
-    onClose();
+
+    window.location.href =
+      "https://buy.stripe.com/00wbJ14Nh0Lf7j07iYgEg01";
   }
 
   function buyFullSub() {
-    startFullSub();
-    alert("全時間サブスク開始（24時間無制限）");
-    onClose();
+
+    window.location.href =
+      "https://buy.stripe.com/bJebJ1a7B9hLbzggTygEg00";
   }
 
   function cancelSubscription() {
+
     cancelSub();
+
     alert("サブスク解約しました");
+
     onClose();
   }
 
   return (
+
     <div
       style={{
         position: "fixed",
