@@ -6,18 +6,15 @@ import { ensureUser } from "../lib/user";
 import { loadPoint } from "../utils/loadPoint";
 
 export default function Register() {
-
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [askOpen, setAskOpen] = useState(false);
 
-  // 🔥 同意チェック
   const [agree, setAgree] = useState(false);
   const [adult, setAdult] = useState(false);
 
   useEffect(() => {
-
     const saved = localStorage.getItem("nickname");
 
     if (saved) {
@@ -25,15 +22,11 @@ export default function Register() {
     }
 
     initUserSafe();
-
   }, []);
 
   async function initUserSafe() {
-
     try {
-
-      const nickname =
-        (localStorage.getItem("nickname") || "").trim();
+      const nickname = (localStorage.getItem("nickname") || "").trim();
 
       const userId = await ensureUser(nickname);
 
@@ -42,17 +35,12 @@ export default function Register() {
       }
 
       await loadPoint();
-
     } catch (e) {
-
       console.error("initUser error:", e);
-
     }
-
   }
 
   async function go(path: string) {
-
     if (!agree) {
       alert("利用規約に同意してください");
       return;
@@ -70,26 +58,20 @@ export default function Register() {
     }
 
     try {
-
       const userId = await ensureUser(nickname);
 
       if (userId) {
         localStorage.setItem("user_id", userId);
       }
-
     } catch (e) {
-
       console.error("go error:", e);
-
     }
 
     navigate(path);
-
   }
 
   return (
     <>
-
       <div
         style={{
           minHeight: "100svh",
@@ -100,15 +82,13 @@ export default function Register() {
           paddingBottom: 24,
         }}
       >
-
         <div
           style={{
             width: "100%",
             maxWidth: 420,
-            padding: 16
+            padding: 16,
           }}
         >
-
           <h1
             style={{
               margin: 0,
@@ -124,12 +104,14 @@ export default function Register() {
             style={{
               textAlign: "center",
               fontSize: 14,
-              lineHeight: 1.6,
+              lineHeight: 1.7,
               marginTop: 12,
-              marginBottom: 20,
+              marginBottom: 16,
             }}
           >
-            AIキャラクターと会話を楽しめる
+            AIキャラクターと会話しながら、
+            <br />
+            気持ちや考えを少し整理できる
             <br />
             チャットサービスです。
           </p>
@@ -142,25 +124,22 @@ export default function Register() {
               padding: 14,
               borderRadius: 14,
               lineHeight: 1.8,
-              boxShadow: "0 2px 10px rgba(0,0,0,0.04)"
+              boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+              color: "#334155",
             }}
           >
-            ポイントについて：
+            本サービスはAIによる会話表示サービスです。
             <br />
-            ・1ターン＝5ポイント
+            医療行為・診断・効果保証を行うものではありません。
             <br />
-            ・1ポイント＝10円
-            <br />
-            ・1DAYパス＝80ポイント
-            <br />
-            ・サブスクあり（1200円 / 1900円）
+            有料機能ではアプリ内ポイントを使用します。
           </div>
 
           <div
             style={{
               fontSize: 12,
               marginBottom: 6,
-              color: "#666"
+              color: "#666",
             }}
           >
             ニックネーム（未入力OK）
@@ -170,14 +149,9 @@ export default function Register() {
             placeholder="なんて呼んだらいい？"
             value={name}
             onChange={(e) => {
-
               setName(e.target.value);
 
-              localStorage.setItem(
-                "nickname",
-                e.target.value
-              );
-
+              localStorage.setItem("nickname", e.target.value);
             }}
             style={{
               width: "100%",
@@ -189,11 +163,10 @@ export default function Register() {
               fontSize: 16,
               outline: "none",
               marginBottom: 18,
-              boxSizing: "border-box"
+              boxSizing: "border-box",
             }}
           />
 
-          {/* 利用規約 */}
           <div
             style={{
               fontSize: 13,
@@ -201,39 +174,26 @@ export default function Register() {
               lineHeight: 1.6,
             }}
           >
-
             <label
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
-
               <input
                 type="checkbox"
                 checked={agree}
-                onChange={(e) =>
-                  setAgree(e.target.checked)
-                }
+                onChange={(e) => setAgree(e.target.checked)}
               />
 
               <span>
-
-                <Link to="/terms">
-                  利用規約
-                </Link>
-
-                {" "}に同意する
-
+                <Link to="/terms">利用規約</Link> に同意する
               </span>
-
             </label>
-
           </div>
 
-          {/* 年齢 */}
           <div
             style={{
               fontSize: 13,
@@ -241,80 +201,56 @@ export default function Register() {
               lineHeight: 1.6,
             }}
           >
-
             <label
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
-
               <input
                 type="checkbox"
                 checked={adult}
-                onChange={(e) =>
-                  setAdult(e.target.checked)
-                }
+                onChange={(e) => setAdult(e.target.checked)}
               />
 
               <span>
-                18歳以上です(18未満は保護者同意が必要です）
+                18歳以上です
               </span>
-
             </label>
-
           </div>
 
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 12
+              gap: 12,
             }}
           >
-
-            <button
-              style={panelStyle}
-              onClick={() => go("/select/free")}
-            >
+            <button style={panelStyle} onClick={() => go("/select/free")}>
               自由におしゃべり
             </button>
 
-            <button
-              style={panelStyle}
-              onClick={() => go("/select/boy")}
-            >
-              男の子としゃべる
+            <button style={panelStyle} onClick={() => go("/select/boy")}>
+              男性キャラクターと話す
             </button>
 
-            <button
-              style={panelStyle}
-              onClick={() => go("/select/girl")}
-            >
-              女の子としゃべる
+            <button style={panelStyle} onClick={() => go("/select/girl")}>
+              女性キャラクターと話す
             </button>
 
-            <button
-              style={panelStyle}
-              onClick={() => go("/lounge")}
-            >
-              🌙BARに入る
+            <button style={panelStyle} onClick={() => go("/lounge")}>
+              ラウンジを見る
             </button>
 
-            <button
-              style={panelStyle}
-              onClick={() => setAskOpen(true)}
-            >
+            <button style={panelStyle} onClick={() => setAskOpen(true)}>
               そのうち教えて
             </button>
-
           </div>
 
           <ShareBox />
 
-          {/* 法律リンク */}
           <div
             style={{
               marginTop: 40,
@@ -324,47 +260,23 @@ export default function Register() {
               lineHeight: 2,
             }}
           >
-
-            <Link to="/terms">
-              利用規約
-            </Link>
-
+            <Link to="/terms">利用規約</Link>
             {" ｜ "}
-
-            <Link to="/privacy">
-              プライバシーポリシー
-            </Link>
-
+            <Link to="/privacy">プライバシーポリシー</Link>
             {" ｜ "}
-
-            <Link to="/tokushoho">
-              特定商取引法
-            </Link>
-
+            <Link to="/tokushoho">特定商取引法</Link>
             {" ｜ "}
-
-            <Link to="/contact">
-              お問い合わせ
-            </Link>
-
+            <Link to="/contact">お問い合わせ</Link>
           </div>
-
         </div>
-
       </div>
 
-      <AskLaterModal
-        open={askOpen}
-        onClose={() => setAskOpen(false)}
-      />
-
+      <AskLaterModal open={askOpen} onClose={() => setAskOpen(false)} />
     </>
   );
-
 }
 
 const panelStyle: React.CSSProperties = {
-
   background: "#ffffff",
   borderRadius: 18,
   padding: 18,
@@ -375,5 +287,4 @@ const panelStyle: React.CSSProperties = {
   cursor: "pointer",
   color: "#1d4ed8",
   boxShadow: "0 4px 14px rgba(0,0,0,0.05)",
-
 };
