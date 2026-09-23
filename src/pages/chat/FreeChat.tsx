@@ -195,49 +195,77 @@ export default function FreeChat() {
   }, [location, userId]);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadMessages() {
+      /*
+       * おとしるべ等から来た場合は、
+       * Supabaseの取得結果を待たずに最初の一言を表示する。
+       */
+      if (intro) {
+        const introText = getIntroMessage(from, intro);
+
+        const introMessage: Message = {
+          id: `intro_${roomId}`,
+          role: "assistant",
+          content: introText,
+        };
+
+        setMessages((prev) => {
+          if (prev.length > 0) {
+            return prev;
+          }
+
+          return [introMessage];
+        });
+      }
+
       const { data, error } = await supabase
         .from("messages")
         .select("*")
         .eq("room_id", roomId)
         .order("created_at", { ascending: true });
 
+      if (cancelled) return;
+
       if (error) {
-        console.error(error);
+        console.error("messages取得エラー:", error);
+
+        /*
+         * Supabase取得に失敗しても、
+         * すでに画面へ出した最初の一言は残す。
+         */
         return;
       }
 
-      if (data) {
-        const loaded = data as Message[];
+      if (data && data.length > 0) {
+        setMessages(data as Message[]);
+        return;
+      }
 
-        if (loaded.length === 0 && intro) {
-          const introText = getIntroMessage(from, intro);
+      /*
+       * まだこのroomにメッセージがない場合だけ、
+       * 最初の一言をSupabaseにも保存する。
+       */
+      if (intro) {
+        const introText = getIntroMessage(from, intro);
 
-          const introMessage: Message = {
-            id: crypto.randomUUID(),
+        await supabase.from("messages").insert([
+          {
+            room_id: roomId,
+            user_id: userId,
             role: "assistant",
             content: introText,
-          };
-
-          setMessages([introMessage]);
-
-          await supabase.from("messages").insert([
-            {
-              room_id: roomId,
-              user_id: userId,
-              role: "assistant",
-              content: introText,
-            },
-          ]);
-
-          return;
-        }
-
-        setMessages(loaded);
+          },
+        ]);
       }
     }
 
     loadMessages();
+
+    return () => {
+      cancelled = true;
+    };
   }, [roomId, intro, from, userId]);
 
   useEffect(() => {
