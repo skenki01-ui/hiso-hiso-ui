@@ -198,10 +198,6 @@ export default function FreeChat() {
     let cancelled = false;
 
     async function loadMessages() {
-      /*
-       * おとしるべ等から来た場合は、
-       * Supabaseの取得結果を待たずに最初の一言を表示する。
-       */
       if (intro) {
         const introText = getIntroMessage(from, intro);
 
@@ -230,11 +226,6 @@ export default function FreeChat() {
 
       if (error) {
         console.error("messages取得エラー:", error);
-
-        /*
-         * Supabase取得に失敗しても、
-         * すでに画面へ出した最初の一言は残す。
-         */
         return;
       }
 
@@ -243,10 +234,6 @@ export default function FreeChat() {
         return;
       }
 
-      /*
-       * まだこのroomにメッセージがない場合だけ、
-       * 最初の一言をSupabaseにも保存する。
-       */
       if (intro) {
         const introText = getIntroMessage(from, intro);
 
@@ -377,16 +364,34 @@ ${getNextRecoveryText()}
       },
     ]);
 
-    const historyForAI = [
+    const historyForAI: {
+      role: "user" | "assistant";
+      content: string;
+    }[] = [];
+
+    if (from === "otoshirube" && intro) {
+      historyForAI.push({
+        role: "assistant",
+        content: `【おとしるべから引き継いだ名前の結果】
+
+${intro}
+
+この結果を前提として、ユーザーとの会話に活用してください。
+ただし、結果をそのまま繰り返すのではなく、ユーザーが聞いたことに合わせて自然に会話してください。`,
+      });
+    }
+
+    historyForAI.push(
       ...messages.slice(-10).map((m) => ({
         role: m.role,
         content: m.content,
-      })),
-      {
-        role: "user" as const,
-        content: text,
-      },
-    ];
+      }))
+    );
+
+    historyForAI.push({
+      role: "user",
+      content: text,
+    });
 
     const aiText = await generateReply({
       character: aiName,
