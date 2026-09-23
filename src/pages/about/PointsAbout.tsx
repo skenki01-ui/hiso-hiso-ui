@@ -1,13 +1,10 @@
 import { useNavigate } from "react-router-dom";
 
 export default function PointsAbout() {
-
   const navigate = useNavigate();
 
-  const handleBuy = async (amount: number, point: number) => {
-
+  const handleBuy = async (point: number) => {
     try {
-
       let user_id = localStorage.getItem("user_id");
 
       if (!user_id) {
@@ -15,54 +12,50 @@ export default function PointsAbout() {
         localStorage.setItem("user_id", user_id);
       }
 
-      const API_BASE =
-        (import.meta.env.VITE_API_BASE_URL as string | undefined)
-        || "http://localhost:3000";
-
-      const res = await fetch(`${API_BASE}/pay`, {
+      const res = await fetch("/api/pay", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           user_id,
-          amount: point
-        })
+          amount: point,
+        }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
-      if (!data.success) {
-        alert("決済失敗");
+      if (!res.ok || !data?.success || !data?.url) {
+        alert(
+          `決済ページを開けませんでした\nstatus: ${res.status}\nerror: ${
+            data?.error || "unknown"
+          }`
+        );
         return;
       }
 
-      alert(`ポイント購入成功🔥 +${point}p`);
-
-      navigate(-1);
-
+      window.location.href = data.url;
     } catch (e) {
-
       console.log(e);
-
       alert("通信エラー");
     }
-
   };
 
   return (
-    <div style={{
-      padding: 20,
-      background: "#eaf3ff",
-      minHeight: "100vh"
-    }}>
-
-      {/* 🔥 ヘッダー */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        marginBottom: 10
-      }}>
+    <div
+      style={{
+        padding: 20,
+        background: "#eaf3ff",
+        minHeight: "100vh",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: 10,
+        }}
+      >
         <button
           onClick={() => navigate(-1)}
           style={{
@@ -70,27 +63,25 @@ export default function PointsAbout() {
             background: "transparent",
             fontSize: 18,
             cursor: "pointer",
-            marginRight: 10
+            marginRight: 10,
           }}
         >
           ◀︎
         </button>
 
-        <div style={{ fontWeight: "bold" }}>
-          ポイント
-        </div>
+        <div style={{ fontWeight: "bold" }}>ポイント</div>
       </div>
 
-      {/* 🔥 本体 */}
-      <div style={{
-        background: "#fff",
-        borderRadius: 12,
-        padding: 20,
-        maxWidth: 500,
-        margin: "0 auto",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
-      }}>
-
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 12,
+          padding: 20,
+          maxWidth: 500,
+          margin: "0 auto",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+        }}
+      >
         <h2 style={{ marginBottom: 10 }}>ポイントについて</h2>
 
         <p>1ターン = 5p</p>
@@ -98,34 +89,51 @@ export default function PointsAbout() {
         <p>1DAYパス = 80p</p>
         <p>24時間ターン無制限</p>
 
-        <h3 style={{ marginTop: 20 }}>カード情報</h3>
+        <h3 style={{ marginTop: 20 }}>1DAYパス</h3>
 
-        <input defaultValue="4242424242424242" style={inputStyle} />
-        <input defaultValue="123" style={inputStyle} />
-        <input defaultValue="12" style={inputStyle} />
-        <input defaultValue="2030" style={inputStyle} />
+        <button onClick={() => handleBuy(80)} style={wideBtn}>
+          800円 → 1DAYパス
+        </button>
 
         <h3 style={{ marginTop: 20 }}>ポイント購入</h3>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 10,
-          marginTop: 10
-        }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 10,
+            marginTop: 10,
+          }}
+        >
+          <button onClick={() => handleBuy(10)} style={btn}>
+            100円 → 10p
+          </button>
 
-          <button onClick={() => handleBuy(100, 10)} style={btn}>100円 → 10p</button>
-          <button onClick={() => handleBuy(300, 30)} style={btn}>300円 → 30p</button>
-          <button onClick={() => handleBuy(500, 50)} style={btn}>500円 → 50p</button>
-          <button onClick={() => handleBuy(1000, 105)} style={btn}>1000円 → 105p</button>
-          <button onClick={() => handleBuy(3000, 320)} style={btn}>3000円 → 320p</button>
-          <button onClick={() => handleBuy(5000, 550)} style={btn}>5000円 → 550p</button>
-          <button onClick={() => handleBuy(10000, 1200)} style={btn}>10000円 → 1200p</button>
+          <button onClick={() => handleBuy(30)} style={btn}>
+            300円 → 30p
+          </button>
 
+          <button onClick={() => handleBuy(50)} style={btn}>
+            500円 → 50p
+          </button>
+
+          <button onClick={() => handleBuy(105)} style={btn}>
+            1000円 → 105p
+          </button>
+
+          <button onClick={() => handleBuy(320)} style={btn}>
+            3000円 → 320p
+          </button>
+
+          <button onClick={() => handleBuy(550)} style={btn}>
+            5000円 → 550p
+          </button>
+
+          <button onClick={() => handleBuy(1200)} style={btn}>
+            10000円 → 1200p
+          </button>
         </div>
-
       </div>
-
     </div>
   );
 }
@@ -137,13 +145,17 @@ const btn: React.CSSProperties = {
   background: "#4da3ff",
   color: "#fff",
   fontWeight: "bold",
-  cursor: "pointer"
+  cursor: "pointer",
 };
 
-const inputStyle: React.CSSProperties = {
-  padding: "10px",
-  borderRadius: 8,
-  border: "1px solid #ccc",
-  fontSize: 14,
-  marginBottom: 8
+const wideBtn: React.CSSProperties = {
+  width: "100%",
+  padding: "14px 10px",
+  borderRadius: 10,
+  border: "none",
+  background: "#2563eb",
+  color: "#fff",
+  fontWeight: "bold",
+  cursor: "pointer",
+  fontSize: 16,
 };

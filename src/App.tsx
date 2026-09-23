@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import "./index.css";
 
 import Register from "./pages/Register";
@@ -15,6 +15,7 @@ import LoungeChat from "./pages/chat/LoungeChat";
 
 import SubscriptionPurchase from "./pages/purchase/SubscriptionPurchase";
 import SubSuccess from "./pages/purchase/SubSuccess";
+import PointSuccess from "./pages/purchase/PointsSuccess";
 
 import About from "./pages/about/About";
 import PointAbout from "./pages/about/PointsAbout";
@@ -22,7 +23,6 @@ import PointBalance from "./pages/about/PointsBalance";
 
 import Share from "./pages/share/Share";
 
-//* 法律ページ *//
 import Terms from "./pages/legal/Terms";
 import Privacy from "./pages/legal/Privacy";
 import Tokushoho from "./pages/legal/Tokushoho";
@@ -30,12 +30,24 @@ import Contact from "./pages/legal/Contact";
 
 import Pay from "./pages/Pay";
 
+function HomeRedirect() {
+  const location = useLocation();
+
+  const params = new URLSearchParams(location.search);
+  const from = params.get("from");
+
+  if (from === "otoshirube") {
+    return <Navigate to={`/chat/free${location.search}`} replace />;
+  }
+
+  return <Navigate to="/register" replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-   
       <Routes>
-        <Route path="/" element={<Navigate to="/register" replace />} />
+        <Route path="/" element={<HomeRedirect />} />
 
         <Route path="/register" element={<Register />} />
 
@@ -50,10 +62,19 @@ export default function App() {
         <Route path="/chat/girl/:id" element={<GirlChat />} />
         <Route path="/chat/free" element={<FreeChat />} />
 
-        <Route path="/purchase/subscription" element={<SubscriptionPurchase />} />
-        <Route path="/pay" element={<Pay />} />
+        <Route
+          path="/purchase/subscription"
+          element={<SubscriptionPurchase />}
+        />
 
-        <Route path="/purchase/sub-success" element={<SubSuccess />} />
+        <Route
+          path="/purchase/sub-success"
+          element={<SubSuccess />}
+        />
+
+        <Route path="/points-success" element={<PointSuccess />} />
+
+        <Route path="/pay" element={<Pay />} />
 
         <Route path="/about" element={<About />} />
         <Route path="/about/point" element={<PointAbout />} />

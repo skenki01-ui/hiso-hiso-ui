@@ -1,63 +1,20 @@
 /* =========================
-  Bubble color fix
-========================= */
-
-/* キャスト吹き出し：薄いグレー＋白文字 */
-.lounge-bubble.cast{
-  background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(255,255,255,0.22);
-  color: #ffffff;
-}
-
-/* ユーザー吹き出し：青＋白文字 */
-.lounge-bubble.me{
-  background: rgba(90,140,255,0.75);
-  border: 1px solid rgba(120,170,255,0.9);
-  color: #ffffff;
-}
-
-/* =========================
-  Input / Send button
-========================= */
-
-/* メッセージ入力欄：白 */
-.lounge-text{
-  background: #ffffff;
-  color: #111;
-  border: 1px solid rgba(0,0,0,0.15);
-}
-
-/* 送信ボタン：白 */
-.lounge-send{
-  background: #ffffff;
-  color: #111;
-  border: 1px solid rgba(0,0,0,0.18);
-}
-
-/* =========================
-  Drink buttons smaller
-========================= */
-
-.drink-btn{
-  height: 30px;          /* ← 小さく */
-  font-size: 12px;
-  border-radius: 8px;
-  padding: 0 6px;
-}
-/* =========================
   Base
 ========================= */
 .lounge-page{
-  height: 100vh;
-  background: #1a1124; /* 黒紫 */
+  width: 100%;
+  max-width: 100vw;
+  height: 100svh;
+  background: #1a1124;
   color: #fff;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* =========================
-  Header (固定)
+  Header
 ========================= */
 .lounge-header{
   height: 54px;
@@ -68,15 +25,16 @@
   background: rgba(26, 17, 36, 0.96);
   backdrop-filter: blur(6px);
   display: grid;
-  grid-template-columns: 64px 1fr 92px;
+  grid-template-columns: 52px minmax(0, 1fr) 92px;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 8px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-sizing: border-box;
 }
 
 .lounge-back{
   height: 36px;
-  width: 52px;
+  width: 44px;
   border: none;
   border-radius: 10px;
   background: rgba(255,255,255,0.08);
@@ -86,36 +44,43 @@
 }
 
 .lounge-title{
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-weight: 800;
+  overflow: hidden;
 }
 
 .lounge-avatar{
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   object-fit: cover;
   border: 1px solid rgba(255,255,255,0.18);
+  flex: 0 0 auto;
 }
 
 .lounge-name{
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lounge-right{
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
 }
 
 .lounge-menu{
   height: 36px;
-  width: 44px;
+  width: 42px;
   border: none;
   border-radius: 10px;
   background: rgba(255,255,255,0.08);
@@ -124,7 +89,87 @@
   cursor: pointer;
 }
 
-/* 酔いゲージ（下→上） */
+/* =========================
+  Body
+========================= */
+.lounge-body{
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 10px 10px;
+  box-sizing: border-box;
+}
+
+/* rows */
+.lounge-row{
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  align-items: flex-end;
+  box-sizing: border-box;
+}
+
+.lounge-row.me{
+  justify-content: flex-end;
+}
+
+.bubble-avatar{
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.15);
+  flex: 0 0 auto;
+}
+
+/* bubbles */
+.lounge-bubble{
+  max-width: min(72%, 280px);
+  padding: 10px 13px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
+/* キャスト吹き出し */
+.lounge-bubble.cast{
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: #ffffff;
+}
+
+/* ユーザー吹き出し */
+.lounge-bubble.me{
+  background: rgba(90,140,255,0.75);
+  border: 1px solid rgba(120,170,255,0.9);
+  color: #ffffff;
+}
+
+/* system bubble */
+.lounge-row.system{
+  justify-content: center;
+}
+
+.lounge-bubble.system{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.78);
+  max-width: 82%;
+}
+
+/* typing bubble */
+.lounge-bubble.typing{
+  opacity: 0.9;
+}
+
+/* =========================
+  Drunk gauge
+========================= */
 .drunk-gauge{
   width: 10px;
   height: 34px;
@@ -134,6 +179,7 @@
   display: flex;
   align-items: flex-end;
 }
+
 .drunk-fill{
   width: 100%;
   background: #ff4d6d;
@@ -141,69 +187,12 @@
 }
 
 /* =========================
-  Body
-========================= */
-.lounge-body{
-  flex: 1;
-  overflow: auto;
-  padding: 12px 10px 10px;
-}
-
-/* rows */
-.lounge-row{
-  display: flex;
-  gap: 8px;
-  margin: 8px 0;
-  align-items: flex-end;
-}
-
-.lounge-row.me{
-  justify-content: flex-end;
-}
-
-.bubble-avatar{
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 1px solid rgba(255,255,255,0.15);
-}
-
-/* bubbles */
-.lounge-bubble{
-  max-width: 76%;
-  padding: 10px 12px;
-  border-radius: 16px;
-  font-size: 13px;
-  line-height: 1.35;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-
-
-/* system bubble */
-.lounge-row.system{
-  justify-content: center;
-}
-.lounge-bubble.system{
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.78);
-}
-
-/* typing bubble */
-.lounge-bubble.typing{
-  opacity: 0.9;
-}
-
-/* =========================
-  Drink gauge (左下/小/黄色)
+  Drink gauge
 ========================= */
 .drink-gauge-wrap{
   position: fixed;
   left: 10px;
-  bottom: 112px; /* 入力+ドリンクの上 */
+  bottom: 112px;
   display: flex;
   align-items: flex-end;
   gap: 6px;
@@ -228,45 +217,49 @@
 
 .drink-fill{
   width: 100%;
-  background: #ffd000; /* 黄色 */
+  background: #ffd000;
   border-radius: 8px;
 }
 
 /* =========================
   Input
 ========================= */
-
 .lounge-input{
   position: sticky;
-  bottom: 48px; /* ドリンクボタンの分 */
+  bottom: 48px;
   z-index: 30;
   background: rgba(26, 17, 36, 0.96);
   padding: 10px 10px 8px;
   display: flex;
   gap: 10px;
   border-top: 1px solid rgba(255,255,255,0.08);
+  box-sizing: border-box;
 }
 
 .lounge-text{
   flex: 1;
+  min-width: 0;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.06);
-  color: #fff;
+  background: #ffffff;
+  color: #111;
   padding: 0 12px;
   outline: none;
+  box-sizing: border-box;
+  font-size: 15px;
 }
 
 .lounge-send{
   width: 68px;
   height: 40px;
-  border-radius: 10px;
-  border: none;
-  background: rgba(110, 170, 255, 0.85);
-  color: #0b0f1a;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.18);
+  background: #ffffff;
+  color: #111;
   font-weight: 800;
   cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .lounge-send:disabled,
@@ -276,7 +269,7 @@
 }
 
 /* =========================
-  Drinks (下段4ボタン)
+  Drinks
 ========================= */
 .lounge-drinks{
   position: sticky;
@@ -285,11 +278,20 @@
   background: rgba(26, 17, 36, 0.96);
   padding: 8px 10px 10px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   border-top: 1px solid rgba(255,255,255,0.08);
+  overflow-x: auto;
+  box-sizing: border-box;
 }
 
-
+.drink-btn{
+  height: 34px;
+  min-width: 72px;
+  font-size: 13px;
+  border-radius: 10px;
+  padding: 0 8px;
+  flex: 0 0 auto;
+}
 
 .drink-btn:disabled{
   opacity: 0.55;
@@ -297,7 +299,7 @@
 }
 
 /* =========================
-  Modal (menu)
+  Modal
 ========================= */
 .modal-backdrop{
   position: fixed;
@@ -345,7 +347,6 @@
   cursor: pointer;
 }
 
-/* メニュー中身：スクロール可能 */
 .menu-scroll{
   padding: 10px 12px 12px;
   overflow-y: auto;
@@ -394,7 +395,6 @@
   margin-bottom: 10px;
 }
 
-/* キャスト一覧 */
 .cast-list{
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -434,11 +434,10 @@
   cursor: pointer;
   margin-top: 10px;
 }
-/* src/pages/chat/LoungeChat.css */
 
-/* ここは元のCSSを残したまま、下だけ追加してOK */
-
-/* ===== バーン演出 ===== */
+/* =========================
+  Burst
+========================= */
 .burst-overlay {
   position: fixed;
   inset: 0;
@@ -463,5 +462,77 @@
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+@media (max-width: 390px) {
+  .lounge-header{
+    height: 48px;
+    min-height: 48px;
+    grid-template-columns: 46px minmax(0, 1fr) 78px;
+    padding: 0 6px;
+  }
+
+  .lounge-back{
+    width: 40px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .lounge-avatar{
+    width: 24px;
+    height: 24px;
+  }
+
+  .lounge-name{
+    font-size: 13px;
+  }
+
+  .lounge-menu{
+    width: 36px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .lounge-body{
+    padding: 8px 8px 8px;
+  }
+
+  .bubble-avatar{
+    width: 24px;
+    height: 24px;
+  }
+
+  .lounge-bubble{
+    max-width: 68%;
+    padding: 8px 10px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .lounge-row{
+    gap: 6px;
+    margin: 6px 0;
+  }
+
+  .lounge-input{
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .lounge-text{
+    height: 38px;
+    font-size: 14px;
+  }
+
+  .lounge-send{
+    width: 62px;
+    height: 38px;
+  }
+
+  .drink-btn{
+    min-width: 66px;
+    height: 32px;
+    font-size: 12px;
   }
 }

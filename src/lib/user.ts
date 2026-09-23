@@ -1,45 +1,56 @@
 import { supabase } from "./supabase";
 
 export async function ensureUser(nickname: string) {
-
   try {
+    const savedId = localStorage.getItem("user_id");
+    const name = nickname || localStorage.getItem("nickname") || "ゲスト";
 
-    // 🔥 すでにあるならそれ使う
-    const existing = localStorage.getItem("user_id");
-    if (existing) return existing;
+    if (savedId) {
+      const { data } = await supabase
+        .from("users")
+        .select("id, point")
+        .eq("id", savedId)
+        .single();
 
-    // 🔥 新規作成
-    const id = crypto.randomUUID();
+      if (data) {
+        return savedId;
+      }
 
-    // 🔥 supabase undefined防止
-    if (!supabase) {
-      console.error("supabase not initialized");
-      return id;
+      const { error: insertError } = await supabase
+        .from("users")
+        .insert({
+          id: savedId,
+          nickname: name,
+          point: 100,
+        });
+
+      if (!insertError) {
+        return savedId;
+      }
+
+      console.error("restore user insert error:", insertError);
     }
+
+    const id = crypto.randomUUID();
 
     const { error } = await supabase
       .from("users")
       .insert({
         id,
-        nickname: nickname || "ゲスト",
-        point: 100
+        nickname: name,
+        point: 100,
       });
 
     if (error) {
       console.error("supabase insert error:", error);
-      return id;
+      return "";
     }
 
     localStorage.setItem("user_id", id);
 
     return id;
-
   } catch (e) {
     console.error("ensureUser crash:", e);
-
-    // 🔥 最悪でもUI止めない
-    const fallbackId = crypto.randomUUID();
-    localStorage.setItem("user_id", fallbackId);
-    return fallbackId;
+    return "";
   }
 }
